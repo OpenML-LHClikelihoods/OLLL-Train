@@ -1,0 +1,34 @@
+#
+# author: Rafal Maselek
+# e-mail: rafal.maselek@ijs.si
+# ORCID:  https://orcid.org/0000-0002-5558-8249
+#
+# This file contains a dictionary for the names of analyses.
+#
+
+analysis_name_dict = {
+	'1908.03122' : 'ATLAS-SUSY-2018-31',
+    '1908.08215' : 'ATLAS-SUSY-2018-32',
+    '1909.08457' : 'ATLAS-SUSY-2018-09',
+    '1909.09226' : 'ATLAS-SUSY-2019-08',
+    '1911.06660' : 'ATLAS-SUSY-2018-04',
+    '1911.12606' : 'ATLAS-SUSY-2018-16',
+    '1912.08479' : 'ATLAS-SUSY-2018-06',
+    '2003.11956' : 'ATLAS-SUSY-2018-33',
+    '2006.13076' : 'ATLAS-TOPQ-2020-02',
+    '2007.14858' : 'ATLAS-TOPQ-2018-05',
+    '2010.14293' : 'ATLAS-SUSY-2018-22',
+    '2011.07812' : 'ATLAS-SUSY-2018-14',
+    '2011.10543' : 'ATLAS-SUSY-2018-36',
+    '2101.01629' : 'ATLAS-SUSY-2018-10',
+    '2101.11582' : 'ATLAS-EXOT-2019-15',
+    '2103.12603' : 'ATLAS-TOPQ-2018-08',
+    '2106.01676' : 'ATLAS-SUSY-2019-09',
+    '2106.11683' : 'ATLAS-TOPQ-2020-10',
+    '2108.07586' : 'ATLAS-SUSY-2018-41',
+    '2204.13072' : 'ATLAS-SUSY-2018-30',
+    '2205.02537' : 'ATLAS-TOPQ-2019-19',
+    '2209.08990' : 'ATLAS-TOPQ-2018-04',
+    '2211.08028' : 'ATLAS-SUSY-2018-30',
+    '2302.01283' : 'ATLAS-TOPQ-2018-44',
+}

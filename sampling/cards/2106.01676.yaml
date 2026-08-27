@@ -1,0 +1,558 @@
+#
+# ATLAS-SUSY-2019-02 / arXiv:2106.01676
+# Higgsinos -> 2 leptons + MET (on- and off-shell WZ), 139/fb
+#
+# bkg_yields / bkg_unc are the published post-fit yields, HEPData ins1866951
+# figure 8 (control and validation regions) and tables 14/15 (signal regions),
+# indexed per BIN in the 'channels' order below.
+#
+bkgfiles :
+    - bkg_offshell.json
+    - bkg_offshell.json
+    - bkg_offshell.json
+    - bkg_onshell.json
+patchsets : 
+    - [offshell_higgsino_patchset.json, False]
+    - [offshell_winobino_minus_patchset.json, False]
+    - [offshell_winobino_plus_patchset.json, False]
+    - [onshell_winobino_plus_patchset.json, True]
+
+channels :
+  - CR_0J_WZ_cuts : CR
+    CR_nJ_WZ_cuts : CR
+    SRhigh_0Jb_cuts : SR
+    SRhigh_0Jc_cuts : SR
+    SRhigh_0Jd_cuts : SR
+    SRhigh_0Je_cuts : SR
+    SRhigh_0Jf1_cuts : SR
+    SRhigh_0Jf2_cuts : SR
+    SRhigh_0Jg1_cuts : SR
+    SRhigh_0Jg2_cuts : SR
+    SRhigh_nJa_cuts : SR
+    SRhigh_nJb_cuts : SR
+    SRhigh_nJc_cuts : SR
+    SRhigh_nJd_cuts : SR
+    SRhigh_nJe_cuts : SR
+    SRhigh_nJf_cuts : SR
+    SRhigh_nJg_cuts : SR
+    SRlow_0Jb_cuts : SR
+    SRlow_0Jc_cuts : SR
+    SRlow_0Jd_cuts : SR
+    SRlow_0Je_cuts : SR
+    SRlow_0Jf1_cuts : SR
+    SRlow_0Jf2_cuts : SR
+    SRlow_0Jg1_cuts : SR
+    SRlow_0Jg2_cuts : SR
+    SRlow_nJb_cuts : SR
+    SRlow_nJc_cuts : SR
+    SRlow_nJd_cuts : SR
+    SRlow_nJe_cuts : SR
+    SRlow_nJf1_cuts : SR
+    SRlow_nJf2_cuts : SR
+    SRlow_nJg1_cuts : SR
+    SRlow_nJg2_cuts : SR
+
+  - CR_0J_WZ_cuts : CR
+    CR_nJ_WZ_cuts : CR
+    SRhigh_0Jb_cuts : SR
+    SRhigh_0Jc_cuts : SR
+    SRhigh_0Jd_cuts : SR
+    SRhigh_0Je_cuts : SR
+    SRhigh_0Jf1_cuts : SR
+    SRhigh_0Jf2_cuts : SR
+    SRhigh_0Jg1_cuts : SR
+    SRhigh_0Jg2_cuts : SR
+    SRhigh_nJa_cuts : SR
+    SRhigh_nJb_cuts : SR
+    SRhigh_nJc_cuts : SR
+    SRhigh_nJd_cuts : SR
+    SRhigh_nJe_cuts : SR
+    SRhigh_nJf_cuts : SR
+    SRhigh_nJg_cuts : SR
+    SRlow_0Jb_cuts : SR
+    SRlow_0Jc_cuts : SR
+    SRlow_0Jd_cuts : SR
+    SRlow_0Je_cuts : SR
+    SRlow_0Jf1_cuts : SR
+    SRlow_0Jf2_cuts : SR
+    SRlow_0Jg1_cuts : SR
+    SRlow_0Jg2_cuts : SR
+    SRlow_nJb_cuts : SR
+    SRlow_nJc_cuts : SR
+    SRlow_nJd_cuts : SR
+    SRlow_nJe_cuts : SR
+    SRlow_nJf1_cuts : SR
+    SRlow_nJf2_cuts : SR
+    SRlow_nJg1_cuts : SR
+    SRlow_nJg2_cuts : SR
+
+  - CR_0J_WZ_cuts : CR
+    CR_nJ_WZ_cuts : CR
+    SRhigh_0Jb_cuts : SR
+    SRhigh_0Jc_cuts : SR
+    SRhigh_0Jd_cuts : SR
+    SRhigh_0Je_cuts : SR
+    SRhigh_0Jf1_cuts : SR
+    SRhigh_0Jf2_cuts : SR
+    SRhigh_0Jg1_cuts : SR
+    SRhigh_0Jg2_cuts : SR
+    SRhigh_nJa_cuts : SR
+    SRhigh_nJb_cuts : SR
+    SRhigh_nJc_cuts : SR
+    SRhigh_nJd_cuts : SR
+    SRhigh_nJe_cuts : SR
+    SRhigh_nJf_cuts : SR
+    SRhigh_nJg_cuts : SR
+    SRlow_0Jb_cuts : SR
+    SRlow_0Jc_cuts : SR
+    SRlow_0Jd_cuts : SR
+    SRlow_0Je_cuts : SR
+    SRlow_0Jf1_cuts : SR
+    SRlow_0Jf2_cuts : SR
+    SRlow_0Jg1_cuts : SR
+    SRlow_0Jg2_cuts : SR
+    SRlow_nJb_cuts : SR
+    SRlow_nJc_cuts : SR
+    SRlow_nJd_cuts : SR
+    SRlow_nJe_cuts : SR
+    SRlow_nJf1_cuts : SR
+    SRlow_nJf2_cuts : SR
+    SRlow_nJg1_cuts : SR
+    SRlow_nJg2_cuts : SR
+    
+
+  - WZ_CR_0jets_cuts : CR
+    WZ_CR_LowHT_cuts : CR
+    WZ_CR_HighHT_cuts : CR
+    SR1_WZ_cuts : SR
+    SR2_WZ_cuts : SR
+    SR3_WZ_cuts : SR
+    SR4_WZ_cuts : SR
+    SR5_WZ_cuts : SR
+    SR6_WZ_cuts : SR
+    SR7_WZ_cuts : SR
+    SR8_WZ_cuts : SR
+    SR9_WZ_cuts : SR
+    SR10_WZ_cuts : SR
+    SR11_WZ_cuts : SR
+    SR12_WZ_cuts : SR
+    SR13_WZ_cuts : SR
+    SR14_WZ_cuts : SR
+    SR15_WZ_cuts : SR
+    SR16_WZ_cuts : SR
+    SR17_WZ_cuts : SR
+    SR18_WZ_cuts : SR
+    SR19_WZ_cuts : SR
+    SR20_WZ_cuts : SR
+
+bkg_yields :
+  -  - 4953.7
+     - 3345.2
+     - 1.5
+     - 4.3
+     - 14.0
+     - 11.5
+     - 35.7
+     - 25.5
+     - 39.5
+     - 21.0
+     - 6.0
+     - 1.4
+     - 2.1
+     - 5.4
+     - 3.0
+     - 9.9
+     - 6.8
+     - 32.0
+     - 44.0
+     - 54.0
+     - 91.0
+     - 32.2
+     - 5.9
+     - 34.7
+     - 6.3
+     - 3.5
+     - 8.0
+     - 13.5
+     - 18.2
+     - 23.4
+     - 17.9
+     - 17.0
+     - 12.4
+     
+  -  - 4953.7
+     - 3345.2
+     - 1.5
+     - 4.3
+     - 14.0
+     - 11.5
+     - 35.7
+     - 25.5
+     - 39.5
+     - 21.0
+     - 6.0
+     - 1.4
+     - 2.1
+     - 5.4
+     - 3.0
+     - 9.9
+     - 6.8
+     - 32.0
+     - 44.0
+     - 54.0
+     - 91.0
+     - 32.2
+     - 5.9
+     - 34.7
+     - 6.3
+     - 3.5
+     - 8.0
+     - 13.5
+     - 18.2
+     - 23.4
+     - 17.9
+     - 17.0
+     - 12.4
+  
+  -  - 4953.7
+     - 3345.2
+     - 1.5
+     - 4.3
+     - 14.0
+     - 11.5
+     - 35.7
+     - 25.5
+     - 39.5
+     - 21.0
+     - 6.0
+     - 1.4
+     - 2.1
+     - 5.4
+     - 3.0
+     - 9.9
+     - 6.8
+     - 32.0
+     - 44.0
+     - 54.0
+     - 91.0
+     - 32.2
+     - 5.9
+     - 34.7
+     - 6.3
+     - 3.5
+     - 8.0
+     - 13.5
+     - 18.2
+     - 23.4
+     - 17.9
+     - 17.0
+     - 12.4
+
+  -  - 2681.7
+     - 3666.0
+     - 802.4
+     - 314.0
+     - 35.0
+     - 4.1
+     - 1.2
+     - 58.0
+     - 8.0
+     - 5.8
+     - 0.8
+     - 90.0
+     - 13.4
+     - 0.5
+     - 0.49
+     - 89.0
+     - 16.0
+     - 2.8
+     - 1.3
+     - 13.7
+     - 9.2
+     - 2.3
+     - 1.09
+
+
+bkg_unc :
+  - - 90.1
+    - 69.0
+    - 0.7
+    - 0.8
+    - 1.6
+    - 1.6
+    - 3.2
+    - 2.4
+    - 3.0
+    - 7.0
+    - 1.6
+    - 0.6
+    - 0.8
+    - 1.4
+    - 1.1
+    - 2.5
+    - 1.8
+    - 4.0
+    - 4.0
+    - 4.0
+    - 6.0
+    - 2.5
+    - 1.1
+    - 2.8
+    - 1.1
+    - 0.6
+    - 1.2
+    - 1.5
+    - 3.4
+    - 2.5
+    - 1.9
+    - 3.5
+    - 1.9
+
+  - - 90.1
+    - 69.0
+    - 0.7
+    - 0.8
+    - 1.6
+    - 1.6
+    - 3.2
+    - 2.4
+    - 3.0
+    - 7.0
+    - 1.6
+    - 0.6
+    - 0.8
+    - 1.4
+    - 1.1
+    - 2.5
+    - 1.8
+    - 4.0
+    - 4.0
+    - 4.0
+    - 6.0
+    - 2.5
+    - 1.1
+    - 2.8
+    - 1.1
+    - 0.6
+    - 1.2
+    - 1.5
+    - 3.4
+    - 2.5
+    - 1.9
+    - 3.5
+    - 1.9
+
+  - - 90.1
+    - 69.0
+    - 0.7
+    - 0.8
+    - 1.6
+    - 1.6
+    - 3.2
+    - 2.4
+    - 3.0
+    - 7.0
+    - 1.6
+    - 0.6
+    - 0.8
+    - 1.4
+    - 1.1
+    - 2.5
+    - 1.8
+    - 4.0
+    - 4.0
+    - 4.0
+    - 6.0
+    - 2.5
+    - 1.1
+    - 2.8
+    - 1.1
+    - 0.6
+    - 1.2
+    - 1.5
+    - 3.4
+    - 2.5
+    - 1.9
+    - 3.5
+    - 1.9
+
+  - - 28.8
+    - 75.1
+    - 18.3
+    - 33.0
+    - 6.0
+    - 1.0
+    - 0.5
+    - 5.0
+    - 0.9
+    - 1.0
+    - 0.4
+    - 20.0 
+    - 2.4
+    - 0.4
+    - 0.24
+    - 11.0
+    - 1.4
+    - 0.6
+    - 0.27
+    - 2.6
+    - 1.3
+    - 0.4
+    - 0.3
+#
+# --- scan limits
+# Precomputed lower/upper limits of the scan, so a run does not have to spend
+# hours finding them. Values are TOTAL yields (central value +/- the scan
+# range), one entry per patchset in the "patchsets" order above; null means
+# "compute at run time".
+#
+# They are only valid for the settings in scan_limits_context below. Change one
+# of those in your run and the sampler says so and recomputes the limits itself
+# - correct, but slow. To make the change permanent, paste the limits it prints
+# into the block below and update scan_limits_context to match.
+
+scan_limits_context :
+    # The settings the scan_limits below were computed with. Your run must
+    # match these, or the limits are recomputed (correct, but slow).
+    # low_lim_samples is the exception: asking for more only warns, because
+    # a coarser search gives a conservative limit, never an unsafe one.
+    sig_rel_unc : 0.0
+    signal_leakage_CR_spread : 0.25
+    signal_leakage_VR_spread : 0.1
+    CR_center : 'obs'
+    VR_center : 'obs'
+    low_lim_samples : 50
+    removeCRsVRs : False
+    remove_channels : []
+
+scan_limits :
+    # offshell_higgsino_patchset.json: 33 bins, in the "channels" order above
+    -
+        - [3927.7501, 6546.25]   # CR_0J_WZ_cuts-0
+        - [2361.7501, 3936.25]   # CR_nJ_WZ_cuts-0
+        - [0.7001, 4.5]   # SRhigh_0Jb_cuts-0
+        - [0.8001, 8]   # SRhigh_0Jc_cuts-0
+        - [1.6001, 19]   # SRhigh_0Jd_cuts-0
+        - [1.6001, 21]   # SRhigh_0Je_cuts-0
+        - [3.2001, 53]   # SRhigh_0Jf1_cuts-0
+        - [2.4001, 26]   # SRhigh_0Jf2_cuts-0
+        - [3.0001, 58]   # SRhigh_0Jg1_cuts-0
+        - [7.0001, 52]   # SRhigh_0Jg2_cuts-0
+        - [1.6001, 11]   # SRhigh_nJa_cuts-0
+        - [0.6001, 5]   # SRhigh_nJb_cuts-0
+        - [0.8001, 6]   # SRhigh_nJc_cuts-0
+        - [1.4001, 9]   # SRhigh_nJd_cuts-0
+        - [1.1001, 7.5]   # SRhigh_nJe_cuts-0
+        - [2.5001, 23.5]   # SRhigh_nJf_cuts-0
+        - [1.8001, 13]   # SRhigh_nJg_cuts-0
+        - [4.0001, 45]   # SRlow_0Jb_cuts-0
+        - [4.0001, 62]   # SRlow_0Jc_cuts-0
+        - [4.0001, 97]   # SRlow_0Jd_cuts-0
+        - [6.0001, 131]   # SRlow_0Je_cuts-0
+        - [2.5001, 45.5]   # SRlow_0Jf1_cuts-0
+        - [1.1001, 12.5]   # SRlow_0Jf2_cuts-0
+        - [2.8001, 48]   # SRlow_0Jg1_cuts-0
+        - [1.1001, 14.5]   # SRlow_0Jg2_cuts-0
+        - [0.6001, 9]   # SRlow_nJb_cuts-0
+        - [1.2001, 19]   # SRlow_nJc_cuts-0
+        - [1.5001, 24.5]   # SRlow_nJd_cuts-0
+        - [3.4001, 31]   # SRlow_nJe_cuts-0
+        - [2.5001, 37.5]   # SRlow_nJf1_cuts-0
+        - [1.9001, 29.5]   # SRlow_nJf2_cuts-0
+        - [3.5001, 39.5]   # SRlow_nJg1_cuts-0
+        - [1.9001, 21.5]   # SRlow_nJg2_cuts-0
+    # offshell_winobino_minus_patchset.json: 33 bins, in the "channels" order above
+    -
+        - [3927.7501, 6546.25]   # CR_0J_WZ_cuts-0
+        - [2361.7501, 3936.25]   # CR_nJ_WZ_cuts-0
+        - [0.7001, 4.5]   # SRhigh_0Jb_cuts-0
+        - [0.8001, 8]   # SRhigh_0Jc_cuts-0
+        - [1.6001, 19]   # SRhigh_0Jd_cuts-0
+        - [1.6001, 21]   # SRhigh_0Je_cuts-0
+        - [3.2001, 53]   # SRhigh_0Jf1_cuts-0
+        - [2.4001, 26]   # SRhigh_0Jf2_cuts-0
+        - [3.0001, 58]   # SRhigh_0Jg1_cuts-0
+        - [7.0001, 52]   # SRhigh_0Jg2_cuts-0
+        - [1.6001, 11]   # SRhigh_nJa_cuts-0
+        - [0.6001, 5]   # SRhigh_nJb_cuts-0
+        - [0.8001, 6]   # SRhigh_nJc_cuts-0
+        - [1.4001, 9]   # SRhigh_nJd_cuts-0
+        - [1.1001, 7.5]   # SRhigh_nJe_cuts-0
+        - [2.5001, 23.5]   # SRhigh_nJf_cuts-0
+        - [1.8001, 13]   # SRhigh_nJg_cuts-0
+        - [4.0001, 45]   # SRlow_0Jb_cuts-0
+        - [4.0001, 62]   # SRlow_0Jc_cuts-0
+        - [4.0001, 97]   # SRlow_0Jd_cuts-0
+        - [6.0001, 131]   # SRlow_0Je_cuts-0
+        - [2.5001, 45.5]   # SRlow_0Jf1_cuts-0
+        - [1.1001, 12.5]   # SRlow_0Jf2_cuts-0
+        - [2.8001, 48]   # SRlow_0Jg1_cuts-0
+        - [1.1001, 14.5]   # SRlow_0Jg2_cuts-0
+        - [0.6001, 9]   # SRlow_nJb_cuts-0
+        - [1.2001, 19]   # SRlow_nJc_cuts-0
+        - [1.5001, 24.5]   # SRlow_nJd_cuts-0
+        - [3.4001, 31]   # SRlow_nJe_cuts-0
+        - [2.5001, 37.5]   # SRlow_nJf1_cuts-0
+        - [1.9001, 29.5]   # SRlow_nJf2_cuts-0
+        - [3.5001, 39.5]   # SRlow_nJg1_cuts-0
+        - [1.9001, 21.5]   # SRlow_nJg2_cuts-0
+    # offshell_winobino_plus_patchset.json: 33 bins, in the "channels" order above
+    -
+        - [3927.7501, 6546.25]   # CR_0J_WZ_cuts-0
+        - [2361.7501, 3936.25]   # CR_nJ_WZ_cuts-0
+        - [0.7001, 4.5]   # SRhigh_0Jb_cuts-0
+        - [0.8001, 8]   # SRhigh_0Jc_cuts-0
+        - [1.6001, 19]   # SRhigh_0Jd_cuts-0
+        - [1.6001, 21]   # SRhigh_0Je_cuts-0
+        - [3.2001, 53]   # SRhigh_0Jf1_cuts-0
+        - [2.4001, 26]   # SRhigh_0Jf2_cuts-0
+        - [3.0001, 58]   # SRhigh_0Jg1_cuts-0
+        - [7.0001, 52]   # SRhigh_0Jg2_cuts-0
+        - [1.6001, 11]   # SRhigh_nJa_cuts-0
+        - [0.6001, 5]   # SRhigh_nJb_cuts-0
+        - [0.8001, 6]   # SRhigh_nJc_cuts-0
+        - [1.4001, 9]   # SRhigh_nJd_cuts-0
+        - [1.1001, 7.5]   # SRhigh_nJe_cuts-0
+        - [2.5001, 23.5]   # SRhigh_nJf_cuts-0
+        - [1.8001, 13]   # SRhigh_nJg_cuts-0
+        - [4.0001, 45]   # SRlow_0Jb_cuts-0
+        - [4.0001, 62]   # SRlow_0Jc_cuts-0
+        - [4.0001, 97]   # SRlow_0Jd_cuts-0
+        - [6.0001, 131]   # SRlow_0Je_cuts-0
+        - [2.5001, 45.5]   # SRlow_0Jf1_cuts-0
+        - [1.1001, 12.5]   # SRlow_0Jf2_cuts-0
+        - [2.8001, 48]   # SRlow_0Jg1_cuts-0
+        - [1.1001, 14.5]   # SRlow_0Jg2_cuts-0
+        - [0.6001, 9]   # SRlow_nJb_cuts-0
+        - [1.2001, 19]   # SRlow_nJc_cuts-0
+        - [1.5001, 24.5]   # SRlow_nJd_cuts-0
+        - [3.4001, 31]   # SRlow_nJe_cuts-0
+        - [2.5001, 37.5]   # SRlow_nJf1_cuts-0
+        - [1.9001, 29.5]   # SRlow_nJf2_cuts-0
+        - [3.5001, 39.5]   # SRlow_nJg1_cuts-0
+        - [1.9001, 21.5]   # SRlow_nJg2_cuts-0
+    # onshell_winobino_plus_patchset.json: 23 bins, in the "channels" order above
+    -
+        - [2151.0001, 3585]   # WZ_CR_0jets_cuts-0
+        - [2609.2501, 4348.75]   # WZ_CR_LowHT_cuts-0
+        - [515.2501, 858.75]   # WZ_CR_HighHT_cuts-0
+        - [33.0001, 497]   # SR1_WZ_cuts-0
+        - [6.0001, 61]   # SR2_WZ_cuts-0
+        - [1.0001, 8]   # SR3_WZ_cuts-0
+        - [0.5001, 4.5]   # SR4_WZ_cuts-0
+        - [5.0001, 67]   # SR5_WZ_cuts-0
+        - [0.9001, 11.5]   # SR6_WZ_cuts-0
+        - [1.0001, 8]   # SR7_WZ_cuts-0
+        - [0.4001, 3]   # SR8_WZ_cuts-0
+        - [20.0001, 178]   # SR9_WZ_cuts-0
+        - [2.4001, 23]   # SR10_WZ_cuts-0
+        - [0.0001, 2]   # SR11_WZ_cuts-0
+        - [0.0001, 1.2]   # SR12_WZ_cuts-0
+        - [11.0001, 166]   # SR13_WZ_cuts-0
+        - [1.4001, 26]   # SR14_WZ_cuts-0
+        - [0.6001, 8]   # SR15_WZ_cuts-0
+        - [0.2701, 2.35]   # SR16_WZ_cuts-0
+        - [2.6001, 26]   # SR17_WZ_cuts-0
+        - [1.3001, 15.5]   # SR18_WZ_cuts-0
+        - [0.4001, 5]   # SR19_WZ_cuts-0
+        - [0.3001, 2.5]   # SR20_WZ_cuts-0

@@ -1,0 +1,82 @@
+# GENERAL settings
+---
+analyses : ['1911.06660']
+input_folder : '../data/'
+output_folder : '../tables/'
+processes : 1
+scans : 1
+points : 100
+bkg_unc_samples : 500
+low_lim_samples : 30
+buffer_size : 100
+start_method : 'random'
+scan_criterion : 'mu1'
+SR_sigma : 0.05
+CR_sigma : 0.02
+VR_sigma : 0.02
+signal_leakage_CR : True
+signal_leakage_CR_spread : 0.10
+signal_leakage_CR_sign : 'both'
+signal_leakage_VR : False
+signal_leakage_VR_spread : 0.10
+signal_leakage_VR_sign : 'both'
+keep_files : False
+fit_bkg : False
+spey_verbose_lvl : 0
+removeCRsVRs : False
+cluster : True
+# Edit the settings below to overwrite the general settings above
+---
+analysis : '1909.09226'
+include : cards/1909.09226.yaml
+points : 10
+bkg_unc_samples : 2000
+buffer_size : 100
+---
+analysis : '1911.06660'
+include : cards/1911.06660.yaml
+points : 50
+bkg_unc_samples : 10
+signal_leakage_CR: False
+removeCRsVRs : true
+---
+analysis : '1911.12606'
+include : cards/1911.12606-sigunc20.yaml
+points : 500
+buffer_size : 20
+signal_leakage_CR_spread : 0.5
+signal_leakage_VR_spread : 0.5
+remove_channels :
+  - SR_eMLLa_Onelep1track_cuts
+  - SR_eMLLb_Onelep1track_cuts
+  - SR_eMLLc_Onelep1track_cuts
+  - SR_eMLLd_Onelep1track_cuts
+  - SR_eMLLe_Onelep1track_cuts
+  - SR_eMLLf_Onelep1track_cuts
+SR_sigma : 0.01
+CR_sigma : 0.01
+---
+analysis : '1908.08215'
+include : cards/1908.08215.yaml
+points : 1000
+buffer_size : 20
+signal_leakage_CR_spread : 0.20
+signal_leakage_VR_spread : 0.20
+CR_center : 'exp'
+VR_center : 'exp'
+SR_sigma : 0.1
+CR_sigma : 0.001
+VR_sigma : 0.001
+scan_criterion : 'nLL_exp_mu1'                                                                                                
+---
+analysis : '1912.08479'
+include : cards/1912.08479.yaml
+points : 100
+buffer_size: 20
+---
+analysis : '2106.01676'
+include: cards/2106.01676.yaml
+points : 40
+buffer_size : 20
+low_lim_samples : 50
+signal_leakage_CR_spread : 0.25

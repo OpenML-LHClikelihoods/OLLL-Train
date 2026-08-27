@@ -1,0 +1,603 @@
+#
+# ATLAS-SUSY-2018-16 / arXiv:1911.12606
+# Compressed sleptons and electroweakinos -> 2 soft leptons + MET, 139/fb
+#
+# bkg_yields / bkg_unc for the signal regions are the published CR+SR fit
+# results, arXiv:1911.12606v2 tables 11, 12 and 14, indexed per BIN in the
+# 'channels' order below. Control regions are not published per bin; those
+# entries are never read, because a CR bin is centred on its OBSERVED yield
+# with range +/- obs * signal_leakage_CR_spread.
+#
+# sig_rel_unc is 0 here. See 1911.12606-sigunc20.yaml for the 20% variant -
+# the scan limits are identical, but the scan itself is not.
+#
+sig_rel_unc : 0.0   # no signal uncertainty
+
+bkgfiles :
+    - EWKinos_bkgonly.json
+    - Selectrons_bkgonly.json
+    - Sleptons_bkgonly.json
+    - Smuons_bkgonly.json
+patchsets : 
+    - [EWKinos_patchset.json, False]
+    - [Selectrons_patchset.json, False]
+    - [Sleptons_patchset.json, True]
+    - [Smuons_patchset.json, False]
+channels :
+    - CRVV_MLL_hghmet_cuts : 'CR'
+      CRVV_MLL_lowmet_cuts : 'CR'
+      CRtau_MLL_hghmet_cuts : 'CR'
+      CRtau_MLL_lowmet_cuts : 'CR'
+      CRtop_MLL_hghmet_cuts : 'CR'
+      CRtop_MLL_lowmet_cuts : 'CR'
+      SR_eMLLa_Onelep1track_cuts : 'SR'
+      SR_eMLLb_Onelep1track_cuts : 'SR'
+      SR_eMLLc_Onelep1track_cuts : 'SR'
+      SR_eMLLd_Onelep1track_cuts : 'SR'
+      SR_eMLLe_Onelep1track_cuts : 'SR'
+      SR_eMLLf_Onelep1track_cuts : 'SR'
+      SRee_eMLLc_hghmet_cuts : 'SR'
+      SRee_eMLLc_lowmet_deltaM_high_cuts : 'SR'
+      SRee_eMLLc_lowmet_deltaM_low_cuts : 'SR'
+      SRee_eMLLd_hghmet_cuts : 'SR'
+      SRee_eMLLd_lowmet_deltaM_high_cuts : 'SR'
+      SRee_eMLLd_lowmet_deltaM_low_cuts : 'SR'
+      SRee_eMLLe_hghmet_cuts : 'SR'
+      SRee_eMLLe_lowmet_deltaM_high_cuts : 'SR'
+      SRee_eMLLe_lowmet_deltaM_low_cuts : 'SR'
+      SRee_eMLLf_hghmet_cuts : 'SR'
+      SRee_eMLLf_lowmet_deltaM_high_cuts : 'SR'
+      SRee_eMLLf_lowmet_deltaM_low_cuts : 'SR'
+      SRee_eMLLg_hghmet_cuts : 'SR'
+      SRee_eMLLg_lowmet_deltaM_high_cuts : 'SR'
+      SRee_eMLLh_hghmet_cuts : 'SR'
+      SRee_eMLLh_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLa_hghmet_cuts : 'SR'
+      SRmm_eMLLa_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLa_lowmet_deltaM_low_cuts : 'SR'
+      SRmm_eMLLb_hghmet_cuts : 'SR'
+      SRmm_eMLLb_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLb_lowmet_deltaM_low_cuts : 'SR'
+      SRmm_eMLLc_hghmet_cuts : 'SR'
+      SRmm_eMLLc_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLc_lowmet_deltaM_low_cuts : 'SR'
+      SRmm_eMLLd_hghmet_cuts : 'SR'
+      SRmm_eMLLd_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLd_lowmet_deltaM_low_cuts : 'SR'
+      SRmm_eMLLe_hghmet_cuts : 'SR'
+      SRmm_eMLLe_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLe_lowmet_deltaM_low_cuts : 'SR'
+      SRmm_eMLLf_hghmet_cuts : 'SR'
+      SRmm_eMLLf_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLf_lowmet_deltaM_low_cuts : 'SR'
+      SRmm_eMLLg_hghmet_cuts : 'SR'
+      SRmm_eMLLg_lowmet_deltaM_high_cuts : 'SR'
+      SRmm_eMLLh_hghmet_cuts : 'SR'
+      SRmm_eMLLh_lowmet_deltaM_high_cuts : 'SR'
+
+    - CRVV_MT2_hghmet_cuts : 'CR'
+      CRVV_MT2_lowmet_cuts : 'CR'
+      CRtau_MT2_hghmet_cuts : 'CR'
+      CRtau_MT2_lowmet_cuts : 'CR'
+      CRtop_MT2_hghmet_cuts : 'CR'
+      CRtop_MT2_lowmet_cuts : 'CR'
+      SRee_eMT2a_hghmet_cuts : 'SR'
+      SRee_eMT2a_lowmet_V2_cuts : 'SR'
+      SRee_eMT2b_hghmet_cuts : 'SR'
+      SRee_eMT2b_lowmet_V2_cuts : 'SR'
+      SRee_eMT2c_hghmet_cuts : 'SR'
+      SRee_eMT2c_lowmet_V2_cuts : 'SR'
+      SRee_eMT2d_hghmet_cuts : 'SR'
+      SRee_eMT2d_lowmet_V2_cuts : 'SR'
+      SRee_eMT2e_hghmet_cuts : 'SR'
+      SRee_eMT2e_lowmet_V2_cuts : 'SR'
+      SRee_eMT2f_hghmet_cuts : 'SR'
+      SRee_eMT2f_lowmet_V2_cuts : 'SR'
+      SRee_eMT2g_hghmet_cuts : 'SR'
+      SRee_eMT2g_lowmet_V2_cuts : 'SR'
+      SRee_eMT2h_hghmet_cuts : 'SR'
+      SRee_eMT2h_lowmet_V2_cuts : 'SR'
+
+    - CRVV_MT2_hghmet_cuts : 'CR'
+      CRVV_MT2_lowmet_cuts : 'CR'
+      CRtau_MT2_hghmet_cuts : 'CR'
+      CRtau_MT2_lowmet_cuts : 'CR'
+      CRtop_MT2_hghmet_cuts : 'CR'
+      CRtop_MT2_lowmet_cuts : 'CR'
+      SRee_eMT2a_hghmet_cuts : 'SR'
+      SRee_eMT2a_lowmet_V2_cuts : 'SR'
+      SRee_eMT2b_hghmet_cuts : 'SR'
+      SRee_eMT2b_lowmet_V2_cuts : 'SR'
+      SRee_eMT2c_hghmet_cuts : 'SR'
+      SRee_eMT2c_lowmet_V2_cuts : 'SR'
+      SRee_eMT2d_hghmet_cuts : 'SR'
+      SRee_eMT2d_lowmet_V2_cuts : 'SR'
+      SRee_eMT2e_hghmet_cuts : 'SR'
+      SRee_eMT2e_lowmet_V2_cuts : 'SR'
+      SRee_eMT2f_hghmet_cuts : 'SR'
+      SRee_eMT2f_lowmet_V2_cuts : 'SR'
+      SRee_eMT2g_hghmet_cuts : 'SR'
+      SRee_eMT2g_lowmet_V2_cuts : 'SR'
+      SRee_eMT2h_hghmet_cuts : 'SR'
+      SRee_eMT2h_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2a_hghmet_cuts : 'SR'
+      SRmm_eMT2a_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2b_hghmet_cuts : 'SR'
+      SRmm_eMT2b_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2c_hghmet_cuts : 'SR'
+      SRmm_eMT2c_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2d_hghmet_cuts : 'SR'
+      SRmm_eMT2d_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2e_hghmet_cuts : 'SR'
+      SRmm_eMT2e_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2f_hghmet_cuts : 'SR'
+      SRmm_eMT2f_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2g_hghmet_cuts : 'SR'
+      SRmm_eMT2g_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2h_hghmet_cuts : 'SR'
+      SRmm_eMT2h_lowmet_V2_cuts : 'SR'
+
+    - CRVV_MT2_hghmet_cuts : 'CR'
+      CRVV_MT2_lowmet_cuts : 'CR'
+      CRtau_MT2_hghmet_cuts : 'CR'
+      CRtau_MT2_lowmet_cuts : 'CR'
+      CRtop_MT2_hghmet_cuts : 'CR'
+      CRtop_MT2_lowmet_cuts : 'CR'
+      SRmm_eMT2a_hghmet_cuts : 'SR'
+      SRmm_eMT2a_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2b_hghmet_cuts : 'SR'
+      SRmm_eMT2b_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2c_hghmet_cuts : 'SR'
+      SRmm_eMT2c_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2d_hghmet_cuts : 'SR'
+      SRmm_eMT2d_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2e_hghmet_cuts : 'SR'
+      SRmm_eMT2e_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2f_hghmet_cuts : 'SR'
+      SRmm_eMT2f_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2g_hghmet_cuts : 'SR'
+      SRmm_eMT2g_lowmet_V2_cuts : 'SR'
+      SRmm_eMT2h_hghmet_cuts : 'SR'
+      SRmm_eMT2h_lowmet_V2_cuts : 'SR'
+
+bkg_yields :
+    -
+        - 705.4326972961426
+        - 813.482795715332
+        - 613.5696868896484
+        - 2227.19236767292
+        - 4074.154443502426
+        - 5767.170987844467
+        - 0.5
+        - 6.0
+        - 7.6
+        - 20.7
+        - 24.0
+        - 18.1
+        - 0.7
+        - 5.3
+        - 0.11
+        - 10.3
+        - 8.6
+        - 5.1
+        - 12.1
+        - 16.7
+        - 7.3
+        - 10.1
+        - 15.5
+        - 2.2
+        - 10.4
+        - 12.9
+        - 19.3
+        - 18.8
+        - 3.4
+        - 15.4
+        - 14.6
+        - 3.5
+        - 8.0
+        - 6.9
+        - 3.9
+        - 6.5
+        - 6.2
+        - 11.0
+        - 11.3
+        - 34.0
+        - 17.8
+        - 15.6
+        - 52.0
+        - 8.3
+        - 16.7
+        - 18.5
+        - 10.1
+        - 15.3
+        - 19.6
+        - 35.9
+    -
+        - 393.64001846313477
+        - 306.25725078582764
+        - 262.5690574645996
+        - 759.0564527511597
+        - 1987.8625400159508
+        - 2889.4120810125023
+        - 4.0
+        - 6.0
+        - 3.6
+        - 5.3
+        - 7.9
+        - 11.6
+        - 13.2
+        - 22.9
+        - 8.6
+        - 31.0
+        - 5.7
+        - 23.3
+        - 7.0
+        - 27.1
+        - 6.8
+        - 16.8
+    -
+        - 393.64001846313477
+        - 306.25725078582764
+        - 262.5690574645996
+        - 759.0564527511597
+        - 1987.8625400159508
+        - 2889.4120810125023
+        - 4.0
+        - 6.0
+        - 3.6
+        - 5.3
+        - 7.9
+        - 11.6
+        - 13.2
+        - 22.9
+        - 8.6
+        - 31.0
+        - 5.7
+        - 23.3
+        - 7.0
+        - 27.1
+        - 6.8
+        - 16.8
+        - 11.0
+        - 5.2
+        - 5.8
+        - 4.3
+        - 8.6
+        - 12.8
+        - 14.2
+        - 24.8
+        - 10.0
+        - 38.0
+        - 11.2
+        - 37.8
+        - 11.5
+        - 36.0
+        - 7.8
+        - 28.0
+    -
+        - 393.64001846313477
+        - 306.25725078582764
+        - 262.5690574645996
+        - 759.0564527511597
+        - 1987.8625400159508
+        - 2889.4120810125023
+        - 11.0
+        - 5.2
+        - 5.8
+        - 4.3
+        - 8.6
+        - 12.8
+        - 14.2
+        - 24.8
+        - 10.0
+        - 38.0
+        - 11.2
+        - 37.8
+        - 11.5
+        - 36.0
+        - 7.8
+        - 28.0
+bkg_unc :
+    -
+        - 9.386828351169315
+        - 21.934615705814014
+        - 14.074931842679332
+        - 35.44846703777411
+        - 22.134218639495977
+        - 26.430726279636474
+        - 0.5
+        - 1.9
+        - 2.1
+        - 3.4
+        - 4.0
+        - 3.1
+        - 0.4
+        - 1.5
+        - 0.08
+        - 2.5
+        - 1.8
+        - 1.6
+        - 2.2
+        - 2.5
+        - 1.9
+        - 1.7
+        - 2.6
+        - 0.9
+        - 1.7
+        - 2.1
+        - 2.5
+        - 2.2
+        - 1.2
+        - 2.4
+        - 2.9
+        - 1.3
+        - 1.7
+        - 2.1
+        - 1.3
+        - 1.6
+        - 1.9
+        - 2.0
+        - 1.9
+        - 4.0
+        - 2.7
+        - 2.3
+        - 6.0
+        - 1.4
+        - 2.3
+        - 3.2
+        - 1.5
+        - 2.0
+        - 2.3
+        - 3.3
+    -
+        - 6.85597100829047
+        - 6.221624555449329
+        - 7.985740653378944
+        - 19.25478201053579
+        - 15.411447501018582
+        - 18.763005693309005
+        - 1.1
+        - 1.4
+        - 1.0
+        - 2.1
+        - 1.9
+        - 2.5
+        - 2.1
+        - 3.3
+        - 1.4
+        - 4.0
+        - 1.0
+        - 3.0
+        - 1.2
+        - 3.1
+        - 1.1
+        - 2.1
+    -
+        - 6.85597100829047
+        - 6.221624555449329
+        - 7.985740653378944
+        - 19.25478201053579
+        - 15.411447501018582
+        - 18.763005693309005
+        - 1.1
+        - 1.4
+        - 1.0
+        - 2.1
+        - 1.9
+        - 2.5
+        - 2.1
+        - 3.3
+        - 1.4
+        - 4.0
+        - 1.0
+        - 3.0
+        - 1.2
+        - 3.1
+        - 1.1
+        - 2.1
+        - 2.2
+        - 1.1
+        - 1.3
+        - 1.0
+        - 1.6
+        - 1.8
+        - 1.9
+        - 2.6
+        - 1.5
+        - 5.0
+        - 1.6
+        - 3.3
+        - 1.5
+        - 3.4
+        - 1.4
+        - 2.7
+    -
+        - 6.85597100829047
+        - 6.221624555449329
+        - 7.985740653378944
+        - 19.25478201053579
+        - 15.411447501018582
+        - 18.763005693309005
+        - 2.2
+        - 1.1
+        - 1.3
+        - 1.0
+        - 1.6
+        - 1.8
+        - 1.9
+        - 2.6
+        - 1.5
+        - 5.0
+        - 1.6
+        - 3.3
+        - 1.5
+        - 3.4
+        - 1.4
+        - 2.7
+#
+# --- scan limits
+# Precomputed lower/upper limits of the scan, so a run does not have to spend
+# hours finding them. Values are TOTAL yields (central value +/- the scan
+# range), one entry per patchset in the "patchsets" order above; null means
+# "compute at run time".
+#
+# They are only valid for the settings in scan_limits_context below. Change one
+# of those in your run and the sampler says so and recomputes the limits itself
+# - correct, but slow. To make the change permanent, paste the limits it prints
+# into the block below and update scan_limits_context to match.
+
+scan_limits_context :
+    # The settings the scan_limits below were computed with. Your run must
+    # match these, or the limits are recomputed (correct, but slow).
+    # low_lim_samples is the exception: asking for more only warns, because
+    # a coarser search gives a conservative limit, never an unsafe one.
+    sig_rel_unc : 0.0
+    signal_leakage_CR_spread : 0.5
+    signal_leakage_VR_spread : 0.5
+    CR_center : 'obs'
+    VR_center : 'obs'
+    low_lim_samples : 8
+    removeCRsVRs : False
+    remove_channels : []
+
+scan_limits :
+    # EWKinos_patchset.json: 50 bins, in the "channels" order above
+    -
+        - [343.5001, 1030.5]   # CRVV_MLL_hghmet_cuts-0
+        - [360.5001, 1081.5]   # CRVV_MLL_lowmet_cuts-0
+        - [296.0001, 888]   # CRtau_MLL_hghmet_cuts-0
+        - [1123.5001, 3370.5]   # CRtau_MLL_lowmet_cuts-0
+        - [2163.5001, 6490.5]   # CRtop_MLL_hghmet_cuts-0
+        - [3082.0001, 9246]   # CRtop_MLL_lowmet_cuts-0
+        - [0.0001, 2.5]   # SR_eMLLa_Onelep1track_cuts-0
+        - [3.0532, 17.5]   # SR_eMLLb_Onelep1track_cuts-0
+        - [2.1001, 18.5]   # SR_eMLLc_Onelep1track_cuts-0
+        - [4.8868, 41]   # SR_eMLLd_Onelep1track_cuts-0
+        - [4.0001, 44]   # SR_eMLLe_Onelep1track_cuts-0
+        - [3.1001, 31.5]   # SR_eMLLf_Onelep1track_cuts-0
+        - [0.4001, 3]   # SRee_eMLLc_hghmet_cuts-0
+        - [1.5001, 14.5]   # SRee_eMLLc_lowmet_deltaM_high_cuts-0
+        - [0.0001, 0.4]   # SRee_eMLLc_lowmet_deltaM_low_cuts-0
+        - [5.3642, 28.5]   # SRee_eMLLd_hghmet_cuts-0
+        - [1.8001, 20]   # SRee_eMLLd_lowmet_deltaM_high_cuts-0
+        - [1.6001, 12]   # SRee_eMLLd_lowmet_deltaM_low_cuts-0
+        - [2.2001, 24]   # SRee_eMLLe_hghmet_cuts-0
+        - [2.5001, 28.5]   # SRee_eMLLe_lowmet_deltaM_high_cuts-0
+        - [3.1657, 20.5]   # SRee_eMLLe_lowmet_deltaM_low_cuts-0
+        - [1.7001, 16.5]   # SRee_eMLLf_hghmet_cuts-0
+        - [2.6001, 29]   # SRee_eMLLf_lowmet_deltaM_high_cuts-0
+        - [1.3368, 8.5]   # SRee_eMLLf_lowmet_deltaM_low_cuts-0
+        - [1.7001, 16.5]   # SRee_eMLLg_hghmet_cuts-0
+        - [2.1001, 20.5]   # SRee_eMLLg_lowmet_deltaM_high_cuts-0
+        - [2.5001, 30.5]   # SRee_eMLLh_hghmet_cuts-0
+        - [2.2001, 20]   # SRee_eMLLh_lowmet_deltaM_high_cuts-0
+        - [1.2001, 11]   # SRmm_eMLLa_hghmet_cuts-0
+        - [2.4001, 21]   # SRmm_eMLLa_lowmet_deltaM_high_cuts-0
+        - [2.9001, 30.5]   # SRmm_eMLLa_lowmet_deltaM_low_cuts-0
+        - [1.3001, 11.5]   # SRmm_eMLLb_hghmet_cuts-0
+        - [1.7001, 15.5]   # SRmm_eMLLb_lowmet_deltaM_high_cuts-0
+        - [2.1001, 18.5]   # SRmm_eMLLb_lowmet_deltaM_low_cuts-0
+        - [0.0001, 6.5]   # SRmm_eMLLc_hghmet_cuts-0
+        - [1.6001, 15]   # SRmm_eMLLc_lowmet_deltaM_high_cuts-0
+        - [1.9001, 15.5]   # SRmm_eMLLc_lowmet_deltaM_low_cuts-0
+        - [2.0001, 19]   # SRmm_eMLLd_hghmet_cuts-0
+        - [1.9001, 21.5]   # SRmm_eMLLd_lowmet_deltaM_high_cuts-0
+        - [10.3282, 61]   # SRmm_eMLLd_lowmet_deltaM_low_cuts-0
+        - [2.7001, 36.5]   # SRmm_eMLLe_hghmet_cuts-0
+        - [2.3001, 28.5]   # SRmm_eMLLe_lowmet_deltaM_high_cuts-0
+        - [11.3907, 89]   # SRmm_eMLLe_lowmet_deltaM_low_cuts-0
+        - [1.4001, 10]   # SRmm_eMLLf_hghmet_cuts-0
+        - [2.3001, 29.5]   # SRmm_eMLLf_lowmet_deltaM_high_cuts-0
+        - [3.7978, 37]   # SRmm_eMLLf_lowmet_deltaM_low_cuts-0
+        - [1.5001, 12.5]   # SRmm_eMLLg_hghmet_cuts-0
+        - [2.0001, 26]   # SRmm_eMLLg_lowmet_deltaM_high_cuts-0
+        - [2.3001, 31.5]   # SRmm_eMLLh_hghmet_cuts-0
+        - [3.3001, 60.5]   # SRmm_eMLLh_lowmet_deltaM_high_cuts-0
+    # Selectrons_patchset.json: 22 bins, in the "channels" order above
+    -
+        - [183.5001, 550.5]   # CRVV_MT2_hghmet_cuts-0
+        - [136.0001, 408]   # CRVV_MT2_lowmet_cuts-0
+        - [109.0001, 327]   # CRtau_MT2_hghmet_cuts-0
+        - [399.5001, 1198.5]   # CRtau_MT2_lowmet_cuts-0
+        - [1026.5001, 3079.5]   # CRtop_MT2_hghmet_cuts-0
+        - [1553.0001, 4659]   # CRtop_MT2_lowmet_cuts-0
+        - [1.1001, 8.5]   # SRee_eMT2a_hghmet_cuts-0
+        - [1.7954, 15]   # SRee_eMT2a_lowmet_V2_cuts-0
+        - [1.0001, 8]   # SRee_eMT2b_hghmet_cuts-0
+        - [2.1001, 15.5]   # SRee_eMT2b_lowmet_V2_cuts-0
+        - [1.9001, 18.5]   # SRee_eMT2c_hghmet_cuts-0
+        - [2.5001, 27.5]   # SRee_eMT2c_lowmet_V2_cuts-0
+        - [2.1001, 23.5]   # SRee_eMT2d_hghmet_cuts-0
+        - [3.3001, 35.5]   # SRee_eMT2d_lowmet_V2_cuts-0
+        - [1.4001, 16]   # SRee_eMT2e_hghmet_cuts-0
+        - [4.0001, 50]   # SRee_eMT2e_lowmet_V2_cuts-0
+        - [1.0001, 11]   # SRee_eMT2f_hghmet_cuts-0
+        - [3.1587, 39]   # SRee_eMT2f_lowmet_V2_cuts-0
+        - [1.2001, 14]   # SRee_eMT2g_hghmet_cuts-0
+        - [3.1001, 47.5]   # SRee_eMT2g_lowmet_V2_cuts-0
+        - [1.1001, 11.5]   # SRee_eMT2h_hghmet_cuts-0
+        - [2.1001, 21.5]   # SRee_eMT2h_lowmet_V2_cuts-0
+    # Sleptons_patchset.json: 38 bins, in the "channels" order above
+    -
+        - [183.5001, 550.5]   # CRVV_MT2_hghmet_cuts-0
+        - [136.0001, 408]   # CRVV_MT2_lowmet_cuts-0
+        - [109.0001, 327]   # CRtau_MT2_hghmet_cuts-0
+        - [399.5001, 1198.5]   # CRtau_MT2_lowmet_cuts-0
+        - [1026.5001, 3079.5]   # CRtop_MT2_hghmet_cuts-0
+        - [1553.0001, 4659]   # CRtop_MT2_lowmet_cuts-0
+        - [1.1001, 8.5]   # SRee_eMT2a_hghmet_cuts-0
+        - [1.7954, 15]   # SRee_eMT2a_lowmet_V2_cuts-0
+        - [1.0001, 8]   # SRee_eMT2b_hghmet_cuts-0
+        - [2.1001, 15.5]   # SRee_eMT2b_lowmet_V2_cuts-0
+        - [1.9001, 18.5]   # SRee_eMT2c_hghmet_cuts-0
+        - [2.5001, 27.5]   # SRee_eMT2c_lowmet_V2_cuts-0
+        - [2.1001, 23.5]   # SRee_eMT2d_hghmet_cuts-0
+        - [3.3001, 35.5]   # SRee_eMT2d_lowmet_V2_cuts-0
+        - [1.4001, 16]   # SRee_eMT2e_hghmet_cuts-0
+        - [4.0001, 50]   # SRee_eMT2e_lowmet_V2_cuts-0
+        - [1.0001, 11]   # SRee_eMT2f_hghmet_cuts-0
+        - [3.1587, 39]   # SRee_eMT2f_lowmet_V2_cuts-0
+        - [1.2001, 14]   # SRee_eMT2g_hghmet_cuts-0
+        - [3.1001, 47.5]   # SRee_eMT2g_lowmet_V2_cuts-0
+        - [1.1001, 11.5]   # SRee_eMT2h_hghmet_cuts-0
+        - [2.1001, 21.5]   # SRee_eMT2h_lowmet_V2_cuts-0
+        - [2.2001, 21]   # SRmm_eMT2a_hghmet_cuts-0
+        - [1.1001, 8.5]   # SRmm_eMT2a_lowmet_V2_cuts-0
+        - [1.3001, 9.5]   # SRmm_eMT2b_hghmet_cuts-0
+        - [1.0001, 11]   # SRmm_eMT2b_lowmet_V2_cuts-0
+        - [1.6001, 19]   # SRmm_eMT2c_hghmet_cuts-0
+        - [1.8001, 24]   # SRmm_eMT2c_lowmet_V2_cuts-0
+        - [1.9001, 21.5]   # SRmm_eMT2d_hghmet_cuts-0
+        - [2.6001, 36]   # SRmm_eMT2d_lowmet_V2_cuts-0
+        - [1.5001, 16.5]   # SRmm_eMT2e_hghmet_cuts-0
+        - [5.0001, 62]   # SRmm_eMT2e_lowmet_V2_cuts-0
+        - [1.6001, 19]   # SRmm_eMT2f_hghmet_cuts-0
+        - [3.3001, 60.5]   # SRmm_eMT2f_lowmet_V2_cuts-0
+        - [1.5001, 17.5]   # SRmm_eMT2g_hghmet_cuts-0
+        - [3.4001, 58]   # SRmm_eMT2g_lowmet_V2_cuts-0
+        - [1.4001, 15]   # SRmm_eMT2h_hghmet_cuts-0
+        - [2.7001, 41.5]   # SRmm_eMT2h_lowmet_V2_cuts-0
+    # Smuons_patchset.json: 22 bins, in the "channels" order above
+    -
+        - [183.5001, 550.5]   # CRVV_MT2_hghmet_cuts-0
+        - [136.0001, 408]   # CRVV_MT2_lowmet_cuts-0
+        - [109.0001, 327]   # CRtau_MT2_hghmet_cuts-0
+        - [399.5001, 1198.5]   # CRtau_MT2_lowmet_cuts-0
+        - [1026.5001, 3079.5]   # CRtop_MT2_hghmet_cuts-0
+        - [1553.0001, 4659]   # CRtop_MT2_lowmet_cuts-0
+        - [2.2001, 21]   # SRmm_eMT2a_hghmet_cuts-0
+        - [1.1001, 8.5]   # SRmm_eMT2a_lowmet_V2_cuts-0
+        - [1.3001, 9.5]   # SRmm_eMT2b_hghmet_cuts-0
+        - [1.0001, 11]   # SRmm_eMT2b_lowmet_V2_cuts-0
+        - [1.6001, 19]   # SRmm_eMT2c_hghmet_cuts-0
+        - [1.8001, 24]   # SRmm_eMT2c_lowmet_V2_cuts-0
+        - [1.9001, 21.5]   # SRmm_eMT2d_hghmet_cuts-0
+        - [2.6001, 36]   # SRmm_eMT2d_lowmet_V2_cuts-0
+        - [1.5001, 16.5]   # SRmm_eMT2e_hghmet_cuts-0
+        - [5.0001, 62]   # SRmm_eMT2e_lowmet_V2_cuts-0
+        - [1.6001, 19]   # SRmm_eMT2f_hghmet_cuts-0
+        - [3.3001, 60.5]   # SRmm_eMT2f_lowmet_V2_cuts-0
+        - [1.5001, 17.5]   # SRmm_eMT2g_hghmet_cuts-0
+        - [3.4001, 58]   # SRmm_eMT2g_lowmet_V2_cuts-0
+        - [1.4001, 15]   # SRmm_eMT2h_hghmet_cuts-0
+        - [2.7001, 41.5]   # SRmm_eMT2h_lowmet_V2_cuts-0

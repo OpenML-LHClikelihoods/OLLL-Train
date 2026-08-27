@@ -1,0 +1,103 @@
+#
+# ATLAS-SUSY-2019-08 / arXiv:1909.09226
+# Electroweakinos -> 1 lepton + h(bb) + MET, 139/fb
+#
+# 14 BINS, not 8: each of the three signal regions is split into three mCT bins
+# ([180,230], [230,280], [280,330] GeV, overflow in the last). bkg_yields and
+# bkg_unc are indexed per BIN, in the channel order below, so both lists hold
+# 14 entries.
+#
+# Signal regions: published post-fit background from the ATLAS background-only
+# fit, HEPData ins1755298 tables t7/t8/t9 ("Expected background", sys (x) stat).
+#
+# Control regions: not published per bin, so these come from a reproduced
+# CR-only fit. They do not affect the scan - a CR bin is centred on its
+# OBSERVED yield with range +/- obs * signal_leakage_CR_spread, so bkg_yields
+# is never read for a CR. They are kept for the printed table and the metadata.
+#
+bkgfiles :
+    - BkgOnly.json
+patchsets :
+    - patchset.json
+channels :
+    -  SRHMEM_mct2 : 'SR'
+       SRLMEM_mct2 : 'SR'
+       SRMMEM_mct2 : 'SR'
+       STCREM_cuts : 'CR'
+       TRHMEM_cuts : 'CR'
+       TRLMEM_cuts : 'CR'
+       TRMMEM_cuts : 'CR'
+       WREM_cuts : 'CR'
+bkg_yields :
+    - 4.059
+    - 2.917
+    - 1.12
+    - 8.833
+    - 11.28
+    - 7.281
+    - 4.588
+    - 2.631
+    - 1.404
+    - 154.27
+    - 644.75
+    - 665.48
+    - 479.98
+    - 143.4
+bkg_unc :
+    - 1.885
+    - 1.318
+    - 0.4623
+    - 2.675
+    - 3.028
+    - 1.541
+    - 1.721
+    - 1.269
+    - 0.5478
+    - 12.3
+    - 24.53
+    - 24.13
+    - 19.65
+    - 11.91
+#
+# --- scan limits
+# Precomputed lower/upper limits of the scan, so a run does not have to spend
+# hours finding them. Values are TOTAL yields (central value +/- the scan
+# range), one entry per patchset in the "patchsets" order above; null means
+# "compute at run time".
+#
+# They are only valid for the settings in scan_limits_context below. Change one
+# of those in your run and the sampler says so and recomputes the limits itself
+# - correct, but slow. To make the change permanent, paste the limits it prints
+# into the block below and update scan_limits_context to match.
+
+scan_limits_context :
+    # The settings the scan_limits below were computed with. Your run must
+    # match these, or the limits are recomputed (correct, but slow).
+    # low_lim_samples is the exception: asking for more only warns, because
+    # a coarser search gives a conservative limit, never an unsafe one.
+    sig_rel_unc : 0.0
+    signal_leakage_CR_spread : 0.1
+    signal_leakage_VR_spread : 0.1
+    CR_center : 'obs'
+    VR_center : 'obs'
+    low_lim_samples : 50
+    removeCRsVRs : False
+    remove_channels : []
+
+scan_limits :
+    # patchset.json: 14 bins, in the "channels" order above
+    -
+        - [1.8851, 15.425]   # SRHMEM_mct2-0
+        - [1.3181, 11.59]   # SRHMEM_mct2-1
+        - [0.4624, 5.3115]   # SRHMEM_mct2-2
+        - [2.6751, 29.375]   # SRLMEM_mct2-0
+        - [3.0281, 26.14]   # SRLMEM_mct2-1
+        - [1.5411, 14.705]   # SRLMEM_mct2-2
+        - [1.7211, 12.605]   # SRMMEM_mct2-0
+        - [1.2691, 13.345]   # SRMMEM_mct2-1
+        - [0.5479, 4.739]   # SRMMEM_mct2-2
+        - [139.5001, 170.5]   # STCREM_cuts-0
+        - [576.9001, 705.1]   # TRHMEM_cuts-0
+        - [591.3001, 722.7]   # TRLMEM_cuts-0
+        - [441.9001, 540.1]   # TRMMEM_cuts-0
+        - [129.6001, 158.4]   # WREM_cuts-0

@@ -1,0 +1,287 @@
+#
+# ATLAS-SUSY-2018-32 / arXiv:1908.08215
+# Sleptons and electroweakinos -> 2 leptons + MET, 139/fb
+#
+# bkg_yields / bkg_unc are the published post-fit background-only fit results,
+# HEPData ins1750597 tables t2 (control regions) and t37-t40 (binned signal
+# regions), indexed per BIN in the 'channels' order below.
+#
+bkgfiles :
+    - bkgonly.json
+
+patchsets : 
+    - [C1C1WW_patchset.json, True]
+    - [SlepSlep_patchset.json, False]
+    - [C1C1SlepSnu_patchset.json, False]
+
+channels:
+- CRVZ_cuts: 'CR'
+  CRWW_cuts: 'CR'
+  CRtop_cuts: 'CR'
+  SRDF_0a_cuts: 'SR'
+  SRDF_0b_cuts: 'SR'
+  SRDF_0c_cuts: 'SR'
+  SRDF_0d_cuts: 'SR'
+  SRDF_0e_cuts: 'SR'
+  SRDF_0f_cuts: 'SR'
+  SRDF_0g_cuts: 'SR'
+  SRDF_0h_cuts: 'SR'
+  SRDF_0i_cuts: 'SR'
+  SRDF_1a_cuts: 'SR'
+  SRDF_1b_cuts: 'SR'
+  SRDF_1c_cuts: 'SR'
+  SRDF_1d_cuts: 'SR'
+  SRDF_1e_cuts: 'SR'
+  SRDF_1f_cuts: 'SR'
+  SRDF_1g_cuts: 'SR'
+  SRDF_1h_cuts: 'SR'
+  SRDF_1i_cuts: 'SR'
+  SRSF_0a_cuts: 'SR'
+  SRSF_0b_cuts: 'SR'
+  SRSF_0c_cuts: 'SR'
+  SRSF_0d_cuts: 'SR'
+  SRSF_0e_cuts: 'SR'
+  SRSF_0f_cuts: 'SR'
+  SRSF_0g_cuts: 'SR'
+  SRSF_0h_cuts: 'SR'
+  SRSF_0i_cuts: 'SR'
+  SRSF_1a_cuts: 'SR'
+  SRSF_1b_cuts: 'SR'
+  SRSF_1c_cuts: 'SR'
+  SRSF_1d_cuts: 'SR'
+  SRSF_1e_cuts: 'SR'
+  SRSF_1f_cuts: 'SR'
+  SRSF_1g_cuts: 'SR'
+  SRSF_1h_cuts: 'SR'
+  SRSF_1i_cuts: 'SR'
+
+bkg_yields:
+    - 811.0
+    - 962.0
+    - 321.0
+    - 14.0
+    - 11.3
+    - 20.0
+    - 21.7
+    - 11.0
+    - 6.3
+    - 6.5
+    - 3.2
+    - 2.9
+    - 14.7
+    - 9.9
+    - 14.3
+    - 14.8
+    - 6.5
+    - 4.4
+    - 5.6
+    - 2.4
+    - 2.7
+    - 15.8
+    - 13.9
+    - 26.9
+    - 33.3
+    - 17.4
+    - 10.4
+    - 13.4
+    - 6.7
+    - 6.8
+    - 17.0
+    - 13.7
+    - 17.0
+    - 23.3
+    - 17.0
+    - 9.4
+    - 12.3
+    - 6.5
+    - 8.0
+bkg_unc:
+    - 28.0
+    - 31.0
+    - 18.0
+    - 4.0
+    - 2.9
+    - 4.0
+    - 3.0
+    - 2.0
+    - 0.9
+    - 1.2
+    - 0.6
+    - 0.5
+    - 2.9
+    - 2.0
+    - 2.4
+    - 2.2
+    - 1.0
+    - 0.9
+    - 1.0
+    - 0.7
+    - 0.8
+    - 2.3
+    - 1.9
+    - 3.2
+    - 3.4
+    - 2.4
+    - 1.2
+    - 1.6
+    - 1.1
+    - 1.0
+    - 4.0
+    - 2.5
+    - 4.0
+    - 2.8
+    - 2.3
+    - 1.9
+    - 1.6
+    - 1.4
+    - 2.7
+#
+# --- scan limits
+# Precomputed lower/upper limits of the scan, so a run does not have to spend
+# hours finding them. Values are TOTAL yields (central value +/- the scan
+# range), one entry per patchset in the "patchsets" order above; null means
+# "compute at run time".
+#
+# They are only valid for the settings in scan_limits_context below. Change one
+# of those in your run and the sampler says so and recomputes the limits itself
+# - correct, but slow. To make the change permanent, paste the limits it prints
+# into the block below and update scan_limits_context to match.
+
+scan_limits_context :
+    # The settings the scan_limits below were computed with. Your run must
+    # match these, or the limits are recomputed (correct, but slow).
+    # low_lim_samples is the exception: asking for more only warns, because
+    # a coarser search gives a conservative limit, never an unsafe one.
+    sig_rel_unc : 0.0
+    signal_leakage_CR_spread : 0.2
+    signal_leakage_VR_spread : 0.2
+    CR_center : 'exp'
+    VR_center : 'exp'
+    low_lim_samples : 8
+    removeCRsVRs : False
+    remove_channels : []
+
+scan_limits :
+    # C1C1WW_patchset.json: 39 bins, in the "channels" order above
+    -
+        - [648.8001, 973.2]   # CRVZ_cuts-0
+        - [769.6001, 1154.4]   # CRWW_cuts-0
+        - [256.8001, 385.2]   # CRtop_cuts-0
+        - [4.0001, 34]   # SRDF_0a_cuts-0
+        - [2.9001, 28.5]   # SRDF_0b_cuts-0
+        - [4.0001, 39]   # SRDF_0c_cuts-0
+        - [3.4384, 31]   # SRDF_0d_cuts-0
+        - [2.211, 21]   # SRDF_0e_cuts-0
+        - [1.2798, 12.5]   # SRDF_0f_cuts-0
+        - [1.3657, 15]   # SRDF_0g_cuts-0
+        - [0.6251, 3.2]   # SRDF_0h_cuts-0
+        - [0.5939, 6.5]   # SRDF_0i_cuts-0
+        - [2.9001, 26.5]   # SRDF_1a_cuts-0
+        - [2.0001, 22]   # SRDF_1b_cuts-0
+        - [2.4001, 26]   # SRDF_1c_cuts-0
+        - [2.2001, 26]   # SRDF_1d_cuts-0
+        - [1.2149, 12]   # SRDF_1e_cuts-0
+        - [0.9001, 8.5]   # SRDF_1f_cuts-0
+        - [1.072, 10]   # SRDF_1g_cuts-0
+        - [0.7001, 6.5]   # SRDF_1h_cuts-0
+        - [0.8001, 7]   # SRDF_1i_cuts-0
+        - [2.3001, 25.5]   # SRSF_0a_cuts-0
+        - [1.9001, 24.5]   # SRSF_0b_cuts-0
+        - [3.5704, 40]   # SRSF_0c_cuts-0
+        - [5.0353, 54]   # SRSF_0d_cuts-0
+        - [3.1032, 32]   # SRSF_0e_cuts-0
+        - [1.9188, 18]   # SRSF_0f_cuts-0
+        - [2.3376, 20]   # SRSF_0g_cuts-0
+        - [1.1001, 10.5]   # SRSF_0h_cuts-0
+        - [1.2267, 13]   # SRSF_0i_cuts-0
+        - [4.0001, 32]   # SRSF_1a_cuts-0
+        - [2.5001, 25.5]   # SRSF_1b_cuts-0
+        - [4.0001, 50]   # SRSF_1c_cuts-0
+        - [2.8001, 35]   # SRSF_1d_cuts-0
+        - [2.3001, 26.5]   # SRSF_1e_cuts-0
+        - [1.9001, 20.5]   # SRSF_1f_cuts-0
+        - [1.9345, 16]   # SRSF_1g_cuts-0
+        - [1.4001, 12]   # SRSF_1h_cuts-0
+        - [2.7001, 18.5]   # SRSF_1i_cuts-0
+    # SlepSlep_patchset.json: 39 bins, in the "channels" order above
+    -
+        - [648.8001, 973.2]   # CRVZ_cuts-0
+        - [769.6001, 1154.4]   # CRWW_cuts-0
+        - [256.8001, 385.2]   # CRtop_cuts-0
+        - [4.0001, 34]   # SRDF_0a_cuts-0
+        - [2.9001, 28.5]   # SRDF_0b_cuts-0
+        - [4.0001, 39]   # SRDF_0c_cuts-0
+        - [3.4384, 31]   # SRDF_0d_cuts-0
+        - [2.211, 21]   # SRDF_0e_cuts-0
+        - [1.2798, 12.5]   # SRDF_0f_cuts-0
+        - [1.3657, 15]   # SRDF_0g_cuts-0
+        - [0.6251, 3.2]   # SRDF_0h_cuts-0
+        - [0.5939, 6.5]   # SRDF_0i_cuts-0
+        - [2.9001, 26.5]   # SRDF_1a_cuts-0
+        - [2.0001, 22]   # SRDF_1b_cuts-0
+        - [2.4001, 26]   # SRDF_1c_cuts-0
+        - [2.2001, 26]   # SRDF_1d_cuts-0
+        - [1.2149, 12]   # SRDF_1e_cuts-0
+        - [0.9001, 8.5]   # SRDF_1f_cuts-0
+        - [1.072, 10]   # SRDF_1g_cuts-0
+        - [0.7001, 6.5]   # SRDF_1h_cuts-0
+        - [0.8001, 7]   # SRDF_1i_cuts-0
+        - [2.3001, 25.5]   # SRSF_0a_cuts-0
+        - [1.9001, 24.5]   # SRSF_0b_cuts-0
+        - [3.5704, 40]   # SRSF_0c_cuts-0
+        - [5.0353, 54]   # SRSF_0d_cuts-0
+        - [3.1032, 32]   # SRSF_0e_cuts-0
+        - [1.9188, 18]   # SRSF_0f_cuts-0
+        - [2.3376, 20]   # SRSF_0g_cuts-0
+        - [1.1001, 10.5]   # SRSF_0h_cuts-0
+        - [1.2267, 13]   # SRSF_0i_cuts-0
+        - [4.0001, 32]   # SRSF_1a_cuts-0
+        - [2.5001, 25.5]   # SRSF_1b_cuts-0
+        - [4.0001, 50]   # SRSF_1c_cuts-0
+        - [2.8001, 35]   # SRSF_1d_cuts-0
+        - [2.3001, 26.5]   # SRSF_1e_cuts-0
+        - [1.9001, 20.5]   # SRSF_1f_cuts-0
+        - [1.9345, 16]   # SRSF_1g_cuts-0
+        - [1.4001, 12]   # SRSF_1h_cuts-0
+        - [2.7001, 18.5]   # SRSF_1i_cuts-0
+    # C1C1SlepSnu_patchset.json: 39 bins, in the "channels" order above
+    -
+        - [648.8001, 973.2]   # CRVZ_cuts-0
+        - [769.6001, 1154.4]   # CRWW_cuts-0
+        - [256.8001, 385.2]   # CRtop_cuts-0
+        - [4.0001, 34]   # SRDF_0a_cuts-0
+        - [2.9001, 28.5]   # SRDF_0b_cuts-0
+        - [4.0001, 39]   # SRDF_0c_cuts-0
+        - [3.4384, 31]   # SRDF_0d_cuts-0
+        - [2.211, 21]   # SRDF_0e_cuts-0
+        - [1.2798, 12.5]   # SRDF_0f_cuts-0
+        - [1.3657, 15]   # SRDF_0g_cuts-0
+        - [0.6251, 3.2]   # SRDF_0h_cuts-0
+        - [0.5939, 6.5]   # SRDF_0i_cuts-0
+        - [2.9001, 26.5]   # SRDF_1a_cuts-0
+        - [2.0001, 22]   # SRDF_1b_cuts-0
+        - [2.4001, 26]   # SRDF_1c_cuts-0
+        - [2.2001, 26]   # SRDF_1d_cuts-0
+        - [1.2149, 12]   # SRDF_1e_cuts-0
+        - [0.9001, 8.5]   # SRDF_1f_cuts-0
+        - [1.072, 10]   # SRDF_1g_cuts-0
+        - [0.7001, 6.5]   # SRDF_1h_cuts-0
+        - [0.8001, 7]   # SRDF_1i_cuts-0
+        - [2.3001, 25.5]   # SRSF_0a_cuts-0
+        - [1.9001, 24.5]   # SRSF_0b_cuts-0
+        - [3.5704, 40]   # SRSF_0c_cuts-0
+        - [5.0353, 54]   # SRSF_0d_cuts-0
+        - [3.1032, 32]   # SRSF_0e_cuts-0
+        - [1.9188, 18]   # SRSF_0f_cuts-0
+        - [2.3376, 20]   # SRSF_0g_cuts-0
+        - [1.1001, 10.5]   # SRSF_0h_cuts-0
+        - [1.2267, 13]   # SRSF_0i_cuts-0
+        - [4.0001, 32]   # SRSF_1a_cuts-0
+        - [2.5001, 25.5]   # SRSF_1b_cuts-0
+        - [4.0001, 50]   # SRSF_1c_cuts-0
+        - [2.8001, 35]   # SRSF_1d_cuts-0
+        - [2.3001, 26.5]   # SRSF_1e_cuts-0
+        - [1.9001, 20.5]   # SRSF_1f_cuts-0
+        - [1.9345, 16]   # SRSF_1g_cuts-0
+        - [1.4001, 12]   # SRSF_1h_cuts-0
+        - [2.7001, 18.5]   # SRSF_1i_cuts-0

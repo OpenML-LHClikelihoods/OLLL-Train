@@ -1,0 +1,65 @@
+#
+# ATLAS-SUSY-2018-23 / arXiv:1911.06660
+# Compressed electroweakinos -> soft leptons + MET, 139/fb
+#
+# bkg_yields / bkg_unc are the published CR+SR fit results, HEPData
+# ins1765529 t18, indexed per BIN in the 'channels' order below - which is
+# the WORKSPACE order (QCR1, QCR2, SR1, SR2, WCR). The published table
+# lists the regions as QCR1, QCR2, WCR, SR1, SR2, so reorder when copying.
+#
+bkgfiles : 
+    - Region-combined/BkgOnly.json
+patchsets :
+    - Region-combined/patchset.json
+channels :
+    -   QCR1cut_cuts : 'CR'
+        QCR2cut_cuts : 'CR'
+        SR1cut_cuts : 'SR'
+        SR2cut_cuts : 'SR'
+        WCRcut_cuts : 'CR'
+bkg_yields :
+    - 73.0
+    - 27.0
+    - 7.3
+    - 8.6
+    - 1099.0
+bkg_unc :
+    - 8.0
+    - 5.0
+    - 2.9
+    - 2.0
+    - 33.0
+#
+# --- scan limits
+# Precomputed lower/upper limits of the scan, so a run does not have to spend
+# hours finding them. Values are TOTAL yields (central value +/- the scan
+# range), one entry per patchset in the "patchsets" order above; null means
+# "compute at run time".
+#
+# They are only valid for the settings in scan_limits_context below. Change one
+# of those in your run and the sampler says so and recomputes the limits itself
+# - correct, but slow. To make the change permanent, paste the limits it prints
+# into the block below and update scan_limits_context to match.
+
+scan_limits_context :
+    # The settings the scan_limits below were computed with. Your run must
+    # match these, or the limits are recomputed (correct, but slow).
+    # low_lim_samples is the exception: asking for more only warns, because
+    # a coarser search gives a conservative limit, never an unsafe one.
+    sig_rel_unc : 0.0
+    signal_leakage_CR_spread : 0.1
+    signal_leakage_VR_spread : 0.1
+    CR_center : 'obs'
+    VR_center : 'obs'
+    low_lim_samples : 8
+    removeCRsVRs : False
+    remove_channels : []
+
+scan_limits :
+    # Region-combined/patchset.json: 5 bins, in the "channels" order above
+    -
+        - [64.8001, 79.2]   # QCR1cut_cuts-0
+        - [24.3001, 29.7]   # QCR2cut_cuts-0
+        - [2.9001, 24.5]   # SR1cut_cuts-0
+        - [2.0001, 17]   # SR2cut_cuts-0
+        - [989.1001, 1208.9]   # WCRcut_cuts-0
