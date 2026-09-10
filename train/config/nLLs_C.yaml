@@ -1,0 +1,55 @@
+exp_type: nLLs
+exp_name: nLLs
+
+data:
+ dataset : [1911.12606-EWKinos-158k-boundaryscan]
+ data_path : data/
+ subsample : null
+ include_permsym: true
+ train_test_val: [.4, .5, .1]
+ no_props: false
+ trafos:
+  fvs_standardized:
+    - log_w_negatives
+    - standardization
+ # per-output nLL preprocessing (C treatment): same intent as nLLs_B — asinh for
+ # the one signed target, a log-like squash for the rest — but `log` is replaced
+ # by `log_w_negatives` because the boundary-scan data reaches the signal-free
+ # point exactly. exp/expA hit 0.0 on the anchor row and obsA dips a few 1e-4
+ # below zero, both of which send plain `log` to -inf/NaN.
+ # log_w_negatives(x) = sign(x)*log1p(|x|) is exact at 0, defined for x<0, and
+ # exactly invertible via undo_log_with_negatives.
+ nLL_trafos:
+  per_output:
+   - [log_w_negatives, standardization]   # exp   (>=0, exact 0 on the anchor)
+   - [asinh, standardization]             # obs   (signed -> asinh(x/scale))
+   - [log_w_negatives, standardization]   # expA  (>=0, exact 0 on the anchor)
+   - [log_w_negatives, standardization]   # obsA  (>=0 bar a few -1e-4)
+  asinh_scale: 5.0
+ incl_fvs: true
+ # restrict training to a subset of the 4 nLL outputs (0=exp, 1=obs, 2=expA, 3=obsA)
+ # null = train all 4; e.g. [1] = only observed, [0,2,3] = all except observed
+ target_indices: null
+
+train: true
+training:
+ iterations: 1000000
+ optimizer: AdamW
+ lr: 2e-4
+ batchsize: 256
+ scheduler: CosineAnnealingLR
+ # per-output loss weights — length must match out_shape (or target_indices length)
+ output_weights: null
+ save_intermediate: false
+ save_gradients: false
+ save_preds_intermediate: false
+
+plot: true
+plotting:
+ histograms: true
+ delta: true
+ delta_prepd: true
+
+defaults:
+ - model: mup_mlp
+ - default

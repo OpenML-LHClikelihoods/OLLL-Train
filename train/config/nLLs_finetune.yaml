@@ -1,0 +1,56 @@
+exp_type: nLLs
+exp_name: nLLs
+
+# Finetune base config: pins the per-output nLL preprocessing to the pretrained
+# offshell-winobino asinh model (trial_0102) so warm-started weights are decoded
+# in the same target space, with ONE physically-motivated change for the new data:
+# obsA (Asimov-observed) crosses zero just like obs, so it also gets asinh instead
+# of log. asinh_scale matches the pretrained model (18.36171) and is NOT swept.
+data:
+ dataset : [2106.01676-winobino-minus-jsons2-rehearsal]
+ data_path : data/
+ subsample : null
+ include_permsym: true
+ train_test_val: [.7, .15, .15]
+ no_props: false
+ trafos:
+  fvs_standardized:
+    - log_w_negatives
+    - standardization
+ # Match the pretrained model's transforms EXACTLY so the pinned stats are valid.
+ nLL_trafos:
+  per_output:
+   - [log, standardization]        # exp   (>= 0)
+   - [asinh, standardization]      # obs   (signed -> asinh(x/scale))
+   - [log, standardization]        # expA  (>= 0)
+   - [log, standardization]        # obsA  (pretrained used log; new rows trimmed to >0)
+  asinh_scale: 18.36171            # pretrained value, fixed
+ incl_fvs: true
+ target_indices: null
+ # Pin input/output normalization to the pretrained model's baked-in stats so OLD
+ # data is decoded exactly as before (retention); refitting on the mix is what
+ # degraded old.
+ fixed_stats_onnx: /eos/user/j/joiturri/likelihoods/models_onnx/SUSY-2019-09_Offshell_Winobino_Minus_asinh.onnx
+
+train: true
+training:
+ iterations: 1000000
+ optimizer: AdamW
+ lr: 2e-4
+ batchsize: 1024
+ scheduler: null                   # constant LR: warm-start would otherwise reload
+                                    # the pretrained cosine state (decayed to ~0)
+ output_weights: null
+ save_intermediate: false
+ save_gradients: false
+ save_preds_intermediate: false
+
+plot: true
+plotting:
+ histograms: true
+ delta: true
+ delta_prepd: true
+
+defaults:
+ - model: mlp
+ - default

@@ -1,0 +1,6 @@
+data/
+furtherdata/
+__pycache__/
+.ipynb_checkpoints/
+old/
+*.tar.gz

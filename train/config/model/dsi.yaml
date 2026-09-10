@@ -1,0 +1,16 @@
+_target_: wrappers.AmplitudeDSIWrapper
+
+net:
+  _target_: models.dsi.DSI
+
+  sum_deepset: true
+  
+  n_features: 0 # will be overwritten once the data is loaded and transformed
+  hidden_channels_prenet: 128
+  hidden_layers_prenet: 4
+  out_dim_prenet_sep: 64
+  hidden_channels_net: 128
+  hidden_layers_net: 4
+  
+  activation: 'gelu'
+  num_groups: 1

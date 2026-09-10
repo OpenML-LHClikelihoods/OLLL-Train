@@ -1,0 +1,17 @@
+data:
+ trafos:
+  invs:
+  - sort_E
+  - invs
+  - log
+  - standardization
+  invs_sqrt:
+  - sort_E
+  - invs
+  - sqrt
+  - standardization
+ incl_fvs: false
+
+defaults:
+ - amplitudes
+ - _self_

@@ -1,0 +1,94 @@
+exp_name: amplitudes
+exp_type: amplitudes
+run_name: null
+base_dir: .
+
+jobid: null
+seed: null
+debug: false
+
+warm_start_idx: null
+warm_start_dir: null  # if set, load pretrained weights from this dir instead of run_dir
+run_dir: null
+save: true
+use_mlflow: false
+save_source: true
+ema: false
+
+ga_settings:
+ use_fully_connected_subgroup: true
+ use_geometric_product: true
+ mix_mvpseudoscalar_into_scalar: true
+ zero_bivector: false
+
+train: true
+training:
+ iterations : 10
+ train_test_val: [.4, .5, .1]
+ subsample: null
+ es_patience: 100
+ es_load_best_model: true
+ validate_every_n_steps: 1000
+ save_intermediate: false
+ load_best_previous: true
+ save_gradients: false
+ save_weights: false
+ save_preds_intermediate: false
+ get_ID: false
+
+ clip_grad_norm: 5
+ clip_grad_value: null
+ max_grad_norm: null
+ log_every_n_steps: 1000
+
+ optimizer : AdamW
+ lr: 3.e-4
+ batchsize: 256
+ betas: [.9, .999]
+ eps: 1.e-8
+ weight_decay: 0
+ 
+ scheduler: null
+ scheduler_scale: 1
+ cosanneal_warmup_steps: 0
+ cosanneal_warmup_frac: 0.0
+ cosanneal_eta_min: 0
+ reduceplateau_factor: 0.1
+ reduceplateau_patience: 50
+ onecycle_max_lr: 10
+ onecycle_pct_start: 0.3
+
+ ema_decay: 0.99
+
+ float16: false
+ enable_flash_sdp: false
+ enable_math_sdp: true
+ enable_mem_efficient_sdp: false
+ force_xformers: false
+
+ loss: MSE
+ dtype: float32
+
+ regularization: null
+ regularization_lambda: 1e-5
+
+ result_path: null       # DyHPO: path to write result JSON after training
+ is_dyhpo_run: false     # set to true by run_trial.py
+ increment_steps: null   # DyHPO: steps for this fidelity increment (null = full run)
+ mae_to_het_transition_frac: 1.0  # MAE_TO_HETEROSC: fraction of training over which alpha goes 0→1
+
+evaluate: true
+evaluation:
+ batchsize: 1024
+
+plot: true
+plotting:
+ loss: true
+
+mlflow:
+ db: '${base_dir}/runs/${exp_name}/mlflow/mlflow.db'
+ artifacts: '${base_dir}/runs/${exp_name}/mlflow_artifacts'
+
+defaults:
+ - hydra
+ - _self_

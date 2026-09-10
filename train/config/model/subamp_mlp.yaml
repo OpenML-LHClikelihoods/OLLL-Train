@@ -1,0 +1,13 @@
+_target_: wrappers.AmplitudeMLPWrapper
+
+
+net:
+  _target_: models.subamp_MLP
+
+  n_features: 0 # will be overwritten once the data is loaded and transformed
+  hidden_channels: 128
+  hidden_layers: 3
+  num_subamps: 3
+
+  activation: "gelu"
+  num_groups: 1

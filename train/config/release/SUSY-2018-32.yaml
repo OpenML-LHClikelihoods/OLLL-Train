@@ -1,0 +1,114 @@
+exp_name: release_v2
+exp_type: nLLs
+run_name: SUSY-2018-32
+base_dir: /eos/user/j/joiturri/likelihoods
+jobid: null
+seed: null
+debug: false
+warm_start_idx: null
+run_dir: null
+save: true
+use_mlflow: false
+save_source: true
+ema: false
+ga_settings:
+  use_fully_connected_subgroup: true
+  use_geometric_product: true
+  mix_mvpseudoscalar_into_scalar: true
+  zero_bivector: false
+train: true
+training:
+  iterations: 500000
+  train_test_val:
+  - 0.4
+  - 0.5
+  - 0.1
+  subsample: null
+  es_patience: 100000000
+  es_load_best_model: true
+  validate_every_n_steps: 1000
+  save_intermediate: false
+  load_best_previous: true
+  save_gradients: false
+  save_weights: false
+  save_preds_intermediate: false
+  get_ID: true
+  clip_grad_norm: 5
+  clip_grad_value: null
+  max_grad_norm: null
+  log_every_n_steps: 1000
+  optimizer: AdamW
+  lr: 0.01
+  batchsize: 2048
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  weight_decay: 0
+  scheduler: CosineAnnealingLR
+  scheduler_scale: 1
+  cosanneal_warmup_steps: 4000
+  cosanneal_warmup_frac: 0.0
+  cosanneal_eta_min: 0
+  reduceplateau_factor: 0.1
+  reduceplateau_patience: 50
+  onecycle_max_lr: 10
+  onecycle_pct_start: 0.3
+  ema_decay: 0.99
+  float16: false
+  enable_flash_sdp: false
+  enable_math_sdp: true
+  enable_mem_efficient_sdp: false
+  force_xformers: false
+  loss: HETEROSC
+  dtype: float32
+  regularization: L2
+  regularization_lambda: 0.000316
+  mae_to_het_transition_frac: 1.0
+evaluate: true
+evaluation:
+  batchsize: 1024
+plot: true
+plotting:
+  loss: true
+  histograms: true
+  delta: true
+  delta_prepd: true
+mlflow:
+  db: ${base_dir}/runs/${exp_name}/mlflow/mlflow.db
+  artifacts: ${base_dir}/runs/${exp_name}/mlflow_artifacts
+model:
+  _target_: wrappers.AmplitudeMLPWrapper
+  net:
+    _target_: models.mup_mlp.MuMLP
+    n_features: 39
+    hidden_channels: 128
+    hidden_layers: 5
+    out_shape: 4
+    loss: HETEROSC
+    gain: 1
+    init_bias: true
+    activation: gelu
+    num_groups: 1
+    type_token_list:
+    - 0
+data:
+  dataset:
+  - 1908.08215-400k-fluct20_
+  data_path: /eos/user/j/joiturri/likelihoods/data
+  subsample: null
+  include_permsym: true
+  train_test_val:
+  - 0.4
+  - 0.5
+  - 0.1
+  no_props: false
+  trafos:
+    fvs_standardized:
+    - log_w_negatives
+    - standardization
+  nLL_trafos:
+  - log_w_negatives
+  - standardization
+  incl_fvs: true
+run_idx: 0

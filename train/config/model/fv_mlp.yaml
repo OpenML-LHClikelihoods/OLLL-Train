@@ -1,0 +1,12 @@
+_target_: wrappers.AmplitudeMLPWrapper
+
+net:
+  _target_: models.fv_mlp.FV_MLP
+
+  n_features: 0 # will be overwritten once the data is loaded and transformed
+  hidden_channels: 128
+  hidden_fv_channels: 10
+  hidden_layers: 5
+
+  activation: "gelu"
+  num_groups: 1

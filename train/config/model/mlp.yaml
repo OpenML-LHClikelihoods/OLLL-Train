@@ -1,0 +1,18 @@
+_target_: wrappers.AmplitudeMLPWrapper
+
+
+net:
+  _target_: models.mlp.MLP
+
+  n_features: 0 # will be overwritten once the data is loaded and transformed
+  hidden_channels: 128
+  hidden_layers: 5
+  out_shape: 4
+  loss: "MSE"
+  dropout_prob: 0
+  batchnorm: false
+  BN_eps: 1e-5 #default PyTorch value
+  BN_momentum: 0.1 #default PyTorch value
+
+  activation: "gelu"
+  num_groups: 1

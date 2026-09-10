@@ -1,0 +1,14 @@
+data:
+ trafos:
+  invs:
+  - sort_E
+  - invs
+  - log
+  - standardization
+ incl_fvs: true
+
+override model: fv_mlp
+defaults:
+#  - model: fv_mlp
+ - amplitudes
+ - _self_

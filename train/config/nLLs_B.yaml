@@ -1,0 +1,56 @@
+exp_type: nLLs
+exp_name: nLLs
+
+data:
+ dataset : [1909.09226-leakage-10_]
+ data_path : data/
+ subsample : null
+ include_permsym: true
+ train_test_val: [.4, .5, .1]
+ no_props: false
+ trafos:
+  fvs_standardized:
+    - log_w_negatives
+    - standardization
+  # invs:
+  # - invs
+  # - log
+  # - standardization
+ # per-output nLL preprocessing (A/B treatment):
+ #   outputs are [exp, obs, expA, obsA]; obs (idx 1) is the only signed target,
+ #   so it gets scaled asinh; the strictly-positive ones get plain log.
+ nLL_trafos:
+  per_output:
+   - [log, standardization]        # exp
+   - [asinh, standardization]      # obs  (signed -> asinh(x/scale))
+   - [log, standardization]        # expA
+   - [log, standardization]        # obsA
+  asinh_scale: 5.0
+ incl_fvs: true
+ # restrict training to a subset of the 4 nLL outputs (0=exp, 1=obs, 2=expA, 3=obsA)
+ # null = train all 4; e.g. [1] = only observed, [0,2,3] = all except observed
+ target_indices: null
+
+train: true
+training:
+ iterations: 1000000 # MLP, DSI: 2500000; Tr: 1000000; GAP, GATr, CGENN: 250000
+ optimizer: AdamW
+ lr: 2e-4
+ batchsize: 256
+ scheduler: CosineAnnealingLR
+ # per-output loss weights — length must match out_shape (or target_indices length)
+ # null = equal weights; e.g. [1,4,1,1] upweights the observed output (index 1)
+ output_weights: null
+ save_intermediate: false
+ save_gradients: false
+ save_preds_intermediate: false
+
+plot: true
+plotting:
+ histograms: true
+ delta: true
+ delta_prepd: true
+
+defaults:
+ - model: mlp
+ - default
