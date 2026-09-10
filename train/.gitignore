@@ -1,0 +1,74 @@
+# === Data (large, regenerable from CSV via data/conv_csv_npy.py) ===
+*.csv
+*.npy
+*.hdf5
+*.xz
+
+# === Figures / deliverables (kept on disk as png+pdf, not committed) ===
+*.png
+*.pdf
+
+# === Models / big binaries (deployable artifacts + containers, not committed) ===
+*.onnx
+*.sif
+*.tar
+*.pt
+*.pt.gz
+*.pkl
+*.bsh
+
+# === Run / sweep / experiment outputs ===
+runs/
+sweeps/
+outputs/
+logs/
+mlruns/
+scratch/
+validations/
+validation_plots/
+plots/
+
+# === Condor / SLURM logs & core dumps ===
+*.err
+*.out
+*.log
+core.*
+core-*
+
+# === Python / tooling caches ===
+__pycache__/
+*/__pycache__/*
+*.pyc
+*/.ipynb_checkpoints/*
+*/.pytest_cache/*
+*/.mypy_cache/*
+*/.coverage
+python_packages
+
+# === Editors / OS / filesystem artifacts ===
+._*
+.DS_Store
+*/.DS_Store
+.fuse_hidden*
+*:Zone.Identifier
+*/.vscode/*
+*/.idea/*
+
+# === Virtualenvs ===
+*/.env
+*/.env.*
+*/.envs
+*/.venv
+*/.venv.*
+*/.tox
+*/.tox.*
+*/.eggs
+*/.eggs.*
+
+# === Misc legacy ===
+draft
+cluster_scripts
+./configs
+
+# === Runtime marker for the figure_pair_guard hook ===
+.claude/.figpair_last

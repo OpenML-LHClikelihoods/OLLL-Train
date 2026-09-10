@@ -1,0 +1,33 @@
+_target_: wrappers.AmplitudeMLPWrapper
+
+net:
+  _target_: models.mup_mlp.MuMLP
+
+  n_features: 0   # overwritten once the data is loaded
+  hidden_channels: 512
+  hidden_layers: 5
+  out_shape: 4
+  loss: "MSE"
+  gain: 1
+  init_bias: true
+  dropout_prob: 0
+  batchnorm: false 
+  BN_eps: 1e-5 #default PyTorch value
+  BN_momentum: 0.1 #default PyTorch value
+
+  activation: "gelu"
+  num_groups: 1
+
+  # false = raw outputs (previous behaviour). true softly saturates the mean
+  # outputs outside the training-target range, in preprocessed space: identity
+  # between the per-output training min/max, logarithmic beyond. This tames the
+  # exponential inverse (expm1 / sinh), which otherwise turns one bad prediction
+  # into an absurd nLL — ~6e6 against a train max of 2095 on the 2018-16 EWkino
+  # boundary scan.
+  #
+  # It is deliberately NOT a clip: the map stays strictly increasing, so going
+  # out of distribution still gives a larger nLL and "just outside" stays
+  # distinguishable from "wildly outside". Only the growth rate is capped.
+  # In-distribution predictions and gradients are exactly unchanged.
+  # The behaviour is traced into the exported ONNX graph.
+  out_soft_bound: false

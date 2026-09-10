@@ -1,0 +1,61 @@
+exp_type: nLLs
+exp_name: nLLs
+
+# Full retrain on old winobino-minus + the new TChiWZoff signal-strength scan.
+#
+# The scan includes points with delta-nLL == 0 exactly (step 0 = no signal), which
+# `log` cannot represent, so every output uses `asinh(x/s)`: log-like for x >> s,
+# linear through 0, and defined for the negative `obs`/`obsA` values too.
+# s = 1.0 (not the pretrained 18.36): 43% of the new rows sit below |delta-nLL| = 0.1,
+# i.e. no sensitivity and nothing to resolve — s = 1 squashes them together while
+# staying logarithmic over the whole 1 -> 1000 range that actually matters.
+data:
+ dataset : [2106.01676-winobino-minus-tchiwzoff-retrain]
+ data_path : data/
+ subsample : null
+ include_permsym: true
+ # Ignored: the split is fixed on disk by <dataset>{,_val,_test}.npy, because the
+ # train block oversamples the new rows and val/test hold out whole mass points.
+ train_test_val: [.7, .15, .15]
+ no_props: false
+ trafos:
+  fvs_standardized:
+    - log_w_negatives
+    - standardization
+ nLL_trafos:
+  per_output:
+   - [asinh, standardization]      # exp   (>= 0, hits 0 exactly)
+   - [asinh, standardization]      # obs   (signed)
+   - [asinh, standardization]      # expA  (>= 0, hits 0 exactly)
+   - [asinh, standardization]      # obsA  (signed)
+  asinh_scale: 1.0
+ incl_fvs: true
+ target_indices: null
+
+train: true
+training:
+ iterations: 1000000
+ optimizer: AdamW
+ lr: 2e-4
+ batchsize: 1024
+ scheduler: CosineAnnealingLR
+ output_weights: null
+ save_intermediate: false
+ save_gradients: false
+ save_preds_intermediate: false
+ loss: HETEROSC
+
+evaluation:
+ # delta-nLL == 0 has no relative scale; keep it out of the relative metrics and
+ # judge those events by absolute error instead.
+ rel_min_truth: 1e-2
+
+plot: true
+plotting:
+ histograms: true
+ delta: true
+ delta_prepd: true
+
+defaults:
+ - model: mup_mlp
+ - default

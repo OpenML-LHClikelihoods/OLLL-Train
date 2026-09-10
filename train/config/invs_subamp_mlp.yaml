@@ -1,0 +1,13 @@
+data:
+ trafos:
+  invs:
+  - sort_E
+  - invs
+  - log
+  - standardization
+ incl_fvs: false
+
+override model: subamp_mlp
+defaults:
+ - amplitudes
+ - _self_

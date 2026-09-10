@@ -1,0 +1,16 @@
+_target_: wrappers.AmplitudeTransformerWrapper
+
+net:
+  _target_: models.transformer.Transformer
+
+  n_features: 0 # will be overwritten once the data is loaded and transformed
+  hidden_channels: 128
+
+  num_blocks: 4
+  num_heads: 4
+  dropout_prob: null
+
+  pos_encoding: true
+  
+  activation: 'gelu'
+  num_groups: 1
