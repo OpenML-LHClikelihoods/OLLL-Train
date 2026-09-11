@@ -2,7 +2,7 @@
 
 Neural-network surrogates for **ATLAS SUSY-search likelihoods**. Given a point's
 signal-region **yields**, an MLP predicts the four **negative-log-likelihood (nLL)
-deltas** `[exp, obs, expA, obsA]` — the `μ=1 − μ=0` differences of the profiled
+deltas** `[exp, obs, expA, obsA]`, the `μ=1 − μ=0` differences of the profiled
 likelihood for {expected, observed, Asimov-expected, Asimov-observed}. Models are
 trained per ATLAS analysis (datasets named by arXiv ID) and exported to **ONNX**
 with all pre/post-processing carried as metadata, so a consumer only needs the
@@ -38,8 +38,7 @@ and writes checkpoints, predictions, and plots under `runs/<exp_name>/<run_name>
 ## Data
 
 Datasets are `.npy` files in `data/`, named `<arXivID>-<channel>-<size>-<tag>.npy`.
-Each row is `[ yields… | 8 nLL columns ]`; the 8 nLL columns are baseline-
-subtracted into the **4 delta targets** `[exp, obs, expA, obsA]`. Inputs and
+Each row is `[ yields… | 8 nLL columns ]`; the 8 nLL columns are baseline subtracted into the **4 delta targets** `[exp, obs, expA, obsA]`. Inputs and
 targets are preprocessed with a signed-log (`sign(x)·log1p(|x|)`) followed by
 standardization.
 
