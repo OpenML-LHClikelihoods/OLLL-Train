@@ -1,0 +1,34 @@
+# Python dependencies for the sampling code (sample.py).
+# Tested with Python 3.11 and the versions pinned below.
+#
+# Setup on a cluster:
+#   python3.11 -m venv venv && source venv/bin/activate
+#   pip install --upgrade pip
+#   pip install -r requirements.txt
+#
+# Everything runs on CPU (CUDA is disabled in likelihood.py, JAX is forced to CPU
+# in sample.py), so the CPU builds of tensorflow/jax are all that is needed.
+
+# numerics / IO
+numpy==2.0.2
+scipy==1.15.0
+pandas==2.3.3
+pyyaml==6.0.2
+
+# statistical models: pyhf with the tensorflow and jax backends, used through spey
+pyhf==0.7.6
+spey==0.2.7
+spey-pyhf==0.2.0
+
+# pyhf backends and the MCMC sampler
+tensorflow==2.18.0
+tf-keras==2.18.0
+tensorflow-probability==0.25.0
+jax==0.4.31
+jaxlib==0.4.31
+
+# logging / terminal output
+tqdm==4.67.1
+tqdm-loggable==0.2
+prettytable==3.16.0
+colorama==0.4.6
