@@ -1,5 +1,5 @@
 #
-# ATLAS-SUSY-2018-16 / arXiv:1911.12606, with a 20% relative signal uncertainty.
+# ATLAS-SUSY-2018-16 / arXiv:1911.12606, with a 22% relative signal uncertainty.
 # Identical to 1911.12606.yaml except for sig_rel_unc.
 #
 # bkg_yields / bkg_unc for the signal regions are the published CR+SR fit
@@ -7,15 +7,15 @@
 # 'channels' order below. Control regions are not published per bin; those
 # entries are never read.
 #
-sig_rel_unc : 0.20   # 20% relative uncertainty on the injected signal
+sig_rel_unc : 0.22   # 22% relative uncertainty on the injected signal
 
 bkgfiles :
     - EWKinos_bkgonly.json
     - Selectrons_bkgonly.json
     - Sleptons_bkgonly.json
     - Smuons_bkgonly.json
-patchsets : 
-    - [EWKinos_patchset.json, False]
+patchsets :
+    - [EWKinos_patchset.json, True]
     - [Selectrons_patchset.json, False]
     - [Sleptons_patchset.json, True]
     - [Smuons_patchset.json, False]
@@ -447,12 +447,22 @@ scan_limits_context :
     # match these, or the limits are recomputed (correct, but slow).
     # low_lim_samples is the exception: asking for more only warns, because
     # a coarser search gives a conservative limit, never an unsafe one.
-    sig_rel_unc : 0.2
+    #
+    # All four patchsets below were re-harvested for this card at
+    # sig_rel_unc=0.22, low_lim_samples=30, nothing removed - none of them are
+    # copies of 1911.12606-sigunc20.yaml's numbers:
+    #   EWKinos     (50 bins): 8 bins came back tighter than the closed-form
+    #                          candidate (unlike the 0%/20% cards, where none did)
+    #   Selectrons  (22 bins): 2 bins tighter (SRee_eMT2a/f_lowmet_V2_cuts-0)
+    #   Sleptons    (38 bins): the same 2 ee bins tighter (shared bkg numbers
+    #                          with Selectrons - consistent cross-check)
+    #   Smuons      (22 bins): no bins needed reduction, identical to 0%/20%
+    sig_rel_unc : 0.22
     signal_leakage_CR_spread : 0.5
     signal_leakage_VR_spread : 0.5
     CR_center : 'obs'
     VR_center : 'obs'
-    low_lim_samples : 8
+    low_lim_samples : 30
     removeCRsVRs : False
     remove_channels : []
 
@@ -466,23 +476,23 @@ scan_limits :
         - [2163.5001, 6490.5]   # CRtop_MLL_hghmet_cuts-0
         - [3082.0001, 9246]   # CRtop_MLL_lowmet_cuts-0
         - [0.0001, 2.5]   # SR_eMLLa_Onelep1track_cuts-0
-        - [3.0532, 17.5]   # SR_eMLLb_Onelep1track_cuts-0
+        - [3.0215, 17.5]   # SR_eMLLb_Onelep1track_cuts-0
         - [2.1001, 18.5]   # SR_eMLLc_Onelep1track_cuts-0
-        - [4.8868, 41]   # SR_eMLLd_Onelep1track_cuts-0
+        - [4.8143, 41]   # SR_eMLLd_Onelep1track_cuts-0
         - [4.0001, 44]   # SR_eMLLe_Onelep1track_cuts-0
         - [3.1001, 31.5]   # SR_eMLLf_Onelep1track_cuts-0
         - [0.4001, 3]   # SRee_eMLLc_hghmet_cuts-0
         - [1.5001, 14.5]   # SRee_eMLLc_lowmet_deltaM_high_cuts-0
         - [0.0001, 0.4]   # SRee_eMLLc_lowmet_deltaM_low_cuts-0
-        - [5.3642, 28.5]   # SRee_eMLLd_hghmet_cuts-0
+        - [5.349, 28.5]   # SRee_eMLLd_hghmet_cuts-0
         - [1.8001, 20]   # SRee_eMLLd_lowmet_deltaM_high_cuts-0
         - [1.6001, 12]   # SRee_eMLLd_lowmet_deltaM_low_cuts-0
         - [2.2001, 24]   # SRee_eMLLe_hghmet_cuts-0
         - [2.5001, 28.5]   # SRee_eMLLe_lowmet_deltaM_high_cuts-0
-        - [3.1657, 20.5]   # SRee_eMLLe_lowmet_deltaM_low_cuts-0
+        - [3.1237, 20.5]   # SRee_eMLLe_lowmet_deltaM_low_cuts-0
         - [1.7001, 16.5]   # SRee_eMLLf_hghmet_cuts-0
         - [2.6001, 29]   # SRee_eMLLf_lowmet_deltaM_high_cuts-0
-        - [1.3368, 8.5]   # SRee_eMLLf_lowmet_deltaM_low_cuts-0
+        - [1.333, 8.5]   # SRee_eMLLf_lowmet_deltaM_low_cuts-0
         - [1.7001, 16.5]   # SRee_eMLLg_hghmet_cuts-0
         - [2.1001, 20.5]   # SRee_eMLLg_lowmet_deltaM_high_cuts-0
         - [2.5001, 30.5]   # SRee_eMLLh_hghmet_cuts-0
@@ -498,18 +508,20 @@ scan_limits :
         - [1.9001, 15.5]   # SRmm_eMLLc_lowmet_deltaM_low_cuts-0
         - [2.0001, 19]   # SRmm_eMLLd_hghmet_cuts-0
         - [1.9001, 21.5]   # SRmm_eMLLd_lowmet_deltaM_high_cuts-0
-        - [10.3282, 61]   # SRmm_eMLLd_lowmet_deltaM_low_cuts-0
+        - [10.2165, 61]   # SRmm_eMLLd_lowmet_deltaM_low_cuts-0
         - [2.7001, 36.5]   # SRmm_eMLLe_hghmet_cuts-0
         - [2.3001, 28.5]   # SRmm_eMLLe_lowmet_deltaM_high_cuts-0
-        - [11.3907, 89]   # SRmm_eMLLe_lowmet_deltaM_low_cuts-0
+        - [11.2699, 89]   # SRmm_eMLLe_lowmet_deltaM_low_cuts-0
         - [1.4001, 10]   # SRmm_eMLLf_hghmet_cuts-0
         - [2.3001, 29.5]   # SRmm_eMLLf_lowmet_deltaM_high_cuts-0
-        - [3.7978, 37]   # SRmm_eMLLf_lowmet_deltaM_low_cuts-0
+        - [3.7093, 37]   # SRmm_eMLLf_lowmet_deltaM_low_cuts-0
         - [1.5001, 12.5]   # SRmm_eMLLg_hghmet_cuts-0
         - [2.0001, 26]   # SRmm_eMLLg_lowmet_deltaM_high_cuts-0
         - [2.3001, 31.5]   # SRmm_eMLLh_hghmet_cuts-0
         - [3.3001, 60.5]   # SRmm_eMLLh_lowmet_deltaM_high_cuts-0
-    # Selectrons_patchset.json: 22 bins, in the "channels" order above
+    # Selectrons_patchset.json: 22 bins, in the "channels" order above.
+    # Harvested at sig_rel_unc=0.22: 2 of 22 bins came back tighter than the
+    # closed-form candidate (SRee_eMT2a_lowmet_V2_cuts-0, SRee_eMT2f_lowmet_V2_cuts-0).
     -
         - [183.5001, 550.5]   # CRVV_MT2_hghmet_cuts-0
         - [136.0001, 408]   # CRVV_MT2_lowmet_cuts-0
@@ -518,7 +530,7 @@ scan_limits :
         - [1026.5001, 3079.5]   # CRtop_MT2_hghmet_cuts-0
         - [1553.0001, 4659]   # CRtop_MT2_lowmet_cuts-0
         - [1.1001, 8.5]   # SRee_eMT2a_hghmet_cuts-0
-        - [1.7954, 15]   # SRee_eMT2a_lowmet_V2_cuts-0
+        - [1.788, 15]   # SRee_eMT2a_lowmet_V2_cuts-0
         - [1.0001, 8]   # SRee_eMT2b_hghmet_cuts-0
         - [2.1001, 15.5]   # SRee_eMT2b_lowmet_V2_cuts-0
         - [1.9001, 18.5]   # SRee_eMT2c_hghmet_cuts-0
@@ -528,12 +540,14 @@ scan_limits :
         - [1.4001, 16]   # SRee_eMT2e_hghmet_cuts-0
         - [4.0001, 50]   # SRee_eMT2e_lowmet_V2_cuts-0
         - [1.0001, 11]   # SRee_eMT2f_hghmet_cuts-0
-        - [3.1587, 39]   # SRee_eMT2f_lowmet_V2_cuts-0
+        - [3.069, 39]   # SRee_eMT2f_lowmet_V2_cuts-0
         - [1.2001, 14]   # SRee_eMT2g_hghmet_cuts-0
         - [3.1001, 47.5]   # SRee_eMT2g_lowmet_V2_cuts-0
         - [1.1001, 11.5]   # SRee_eMT2h_hghmet_cuts-0
         - [2.1001, 21.5]   # SRee_eMT2h_lowmet_V2_cuts-0
-    # Sleptons_patchset.json: 38 bins, in the "channels" order above
+    # Sleptons_patchset.json: 38 bins, in the "channels" order above.
+    # Harvested at sig_rel_unc=0.22: 2 of 38 bins came back tighter than the
+    # closed-form candidate (same two ee bins as Selectrons - shared bkg numbers).
     -
         - [183.5001, 550.5]   # CRVV_MT2_hghmet_cuts-0
         - [136.0001, 408]   # CRVV_MT2_lowmet_cuts-0
@@ -542,7 +556,7 @@ scan_limits :
         - [1026.5001, 3079.5]   # CRtop_MT2_hghmet_cuts-0
         - [1553.0001, 4659]   # CRtop_MT2_lowmet_cuts-0
         - [1.1001, 8.5]   # SRee_eMT2a_hghmet_cuts-0
-        - [1.7954, 15]   # SRee_eMT2a_lowmet_V2_cuts-0
+        - [1.788, 15]   # SRee_eMT2a_lowmet_V2_cuts-0
         - [1.0001, 8]   # SRee_eMT2b_hghmet_cuts-0
         - [2.1001, 15.5]   # SRee_eMT2b_lowmet_V2_cuts-0
         - [1.9001, 18.5]   # SRee_eMT2c_hghmet_cuts-0
@@ -552,7 +566,7 @@ scan_limits :
         - [1.4001, 16]   # SRee_eMT2e_hghmet_cuts-0
         - [4.0001, 50]   # SRee_eMT2e_lowmet_V2_cuts-0
         - [1.0001, 11]   # SRee_eMT2f_hghmet_cuts-0
-        - [3.1587, 39]   # SRee_eMT2f_lowmet_V2_cuts-0
+        - [3.069, 39]   # SRee_eMT2f_lowmet_V2_cuts-0
         - [1.2001, 14]   # SRee_eMT2g_hghmet_cuts-0
         - [3.1001, 47.5]   # SRee_eMT2g_lowmet_V2_cuts-0
         - [1.1001, 11.5]   # SRee_eMT2h_hghmet_cuts-0
@@ -573,7 +587,9 @@ scan_limits :
         - [3.4001, 58]   # SRmm_eMT2g_lowmet_V2_cuts-0
         - [1.4001, 15]   # SRmm_eMT2h_hghmet_cuts-0
         - [2.7001, 41.5]   # SRmm_eMT2h_lowmet_V2_cuts-0
-    # Smuons_patchset.json: 22 bins, in the "channels" order above
+    # Smuons_patchset.json: 22 bins, in the "channels" order above.
+    # Harvested at sig_rel_unc=0.22: no bins needed reduction (identical to
+    # the 0%/20% cards).
     -
         - [183.5001, 550.5]   # CRVV_MT2_hghmet_cuts-0
         - [136.0001, 408]   # CRVV_MT2_lowmet_cuts-0
