@@ -95,27 +95,27 @@ def build_signal_modifiers(bin_vals, sig_rel_unc):
     base = [
         {
             "data": None,
-            "name": "lumi",
-            "type": "lumi"
+            "name": "mu_SIG",
+            "type": "normfactor"
         },
         {
             "data": None,
-            "name": "mu_SIG",
-            "type": "normfactor"
+            "name": "lumi",
+            "type": "lumi"
         }
     ]
     if abs(sig_rel_unc) <= 1e-17:
         return base
-    return [
+    return base + [
         {
             "name": "signalUncertainty",
             "type": "histosys",
             "data": {
-                "hi_data": bin_vals * (1.0+sig_rel_unc),
+                "hi_data": [ float(bval*(1.0+sig_rel_unc)) for bval in bin_vals],
                 "lo_data": [ float(np.max([0.0, bval*(1.0-sig_rel_unc)])) for bval in bin_vals]
                 },
         },
-    ] + base
+    ]
 
 
 def find_min_S(niter, bkg_spec, stat_wrapper, nSmin, channels_and_bins, logger, probe_mask=None,
