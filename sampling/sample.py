@@ -693,11 +693,12 @@ def main(logger, param_file, starting_points_file, starting_points_file_index):
 
                 p0s = generate_starting_points(nSmin, nSmax, central_values,
                                     mask=mask,
-                                    n=param_dict['scans'], 
-                                    start_method=param_dict['start_method'], 
+                                    n=param_dict['scans'],
+                                    start_method=param_dict['start_method'],
                                     channels_and_bins=channels_and_bins,
+                                    logger=logger,
                                     starting_points_file=starting_points_file,
-                                    starting_points_file_index=starting_points_file_index 
+                                    starting_points_file_index=starting_points_file_index
                                     )
                 # When using input file with total yields, one has to subtract central values
                 # if starting_points_file is not None:

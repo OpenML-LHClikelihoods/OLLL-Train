@@ -41,22 +41,37 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 # misc.py
-def setup_logger(log_dir="logs"):
-    """Set up a logger with both console and file handlers."""
+def setup_logger(log_dir="logs", level=logging.INFO, log_filename=None):
+    """Set up a logger with both console and file handlers.
+
+    Also used to REPAIR a logger inside a spawned worker process: a
+    ``multiprocessing`` 'spawn' child unpickles a ``Logger`` by name only
+    (``logging.getLogger(name)``), which in a fresh interpreter comes back
+    with no handlers and the level reset - so ``logger.debug()``/``.info()``
+    calls made inside a worker silently vanish unless this is called again
+    there. ``level`` lets the caller restore whatever the parent had, and
+    ``log_filename`` lets a worker append to the SAME file the parent
+    process is writing to, instead of starting a new one.
+    """
     # Ensure log directory exists
     os.makedirs(log_dir, exist_ok=True)
 
-    # Generate a unique log filename
-    log_filename = os.path.join(log_dir, f"log_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt")
+    if log_filename is None:
+        # Generate a unique log filename
+        log_filename = os.path.join(log_dir, f"log_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt")
 
     # Create a named logger (isolated from root)
     logger = logging.getLogger("main_logger")
-    logger.setLevel(logging.INFO)
     logger.propagate = False
-    
-    # Avoid adding handlers multiple times
+
+    # Avoid adding handlers multiple times. The level is set only on this
+    # FIRST, fresh setup: an already-configured logger keeps whatever level
+    # it has, so an incidental call elsewhere with a default `level` (e.g. a
+    # `logger=None` fallback that forgot to receive the real one) cannot
+    # silently clobber a level the caller deliberately set (DEBUG, say).
     if logger.handlers:
         return logger
+    logger.setLevel(level)
 
     # File handler (non-colored)
     file_handler = logging.FileHandler(log_filename, mode='a')

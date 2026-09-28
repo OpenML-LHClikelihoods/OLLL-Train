@@ -9,6 +9,7 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 #os.environ.pop('TF_CONFIG', None)
+import logging
 import numpy as np
 from math import isinf, isnan
 from timeit import default_timer as timer
@@ -107,7 +108,7 @@ def build_signal_modifiers(bin_vals, sig_rel_unc):
         return base
     return [
         {
-            "name": "Wolfgang_unc",
+            "name": "signalUncertainty",
             "type": "histosys",
             "data": {
                 "hi_data": bin_vals * (1.0+sig_rel_unc),
@@ -689,7 +690,8 @@ class LikelihoodCalculatorWrapper():
                 recognized criterion strings.
         """
         set_seeds(self._seed)
-        if self.nLL_exp_mu0 is None:
+        first_call = self.nLL_exp_mu0 is None
+        if first_call:
             # first call
             self.calculate_Lmu0(S_yields)
             self.calculate_Lmax(S_yields)
@@ -699,7 +701,8 @@ class LikelihoodCalculatorWrapper():
             interpreter.remove_channel(channel_name)
 
         new_patch = interpreter.make_patch()
-        # self.logger.warning(new_patch)
+        if first_call and self.logger.isEnabledFor(logging.DEBUG):
+            self.logger.debug(f'First-iteration mu=1 signal patch (sig_rel_unc={self._sig_rel_unc}): {new_patch}')
         statistical_model = self._stat_wrapper(
                                             background_only_model=interpreter.background_only_model,
                                             signal_patch=new_patch,
@@ -900,6 +903,15 @@ class ScanWrapper():
             logger (logging.Logger, optional): Logger to use; if ``None``,
                 a new one is created via ``setup_logger()``.
         """
+        # A 'spawn' worker unpickles this logger by name only, so it comes
+        # back in the child with no handlers and its level reset - captured
+        # here, in the parent, so __call__ can repair it on the other side.
+        self._log_level = logger.getEffectiveLevel() if logger is not None else logging.INFO
+        self._log_filename = None
+        if logger is not None:
+            file_handlers = [h for h in logger.handlers if isinstance(h, logging.FileHandler)]
+            if file_handlers:
+                self._log_filename = file_handlers[0].baseFilename
         self._N = N
         self._bkg_spec = bkg_spec
         self._channels_and_bins = channels_and_bins
@@ -950,6 +962,12 @@ class ScanWrapper():
             ValueError: If ``self._criterion`` is not a recognized value.
         """
         set_seeds(self._seed)
+        if not self.logger.handlers:
+            # Running in a spawned worker: repair the logger so debug/info
+            # calls made in this process are not silently dropped. Reusing
+            # the parent's exact log file keeps everything in one place.
+            log_dir = os.path.dirname(self._log_filename) if self._log_filename else 'logs'
+            self.logger = setup_logger(log_dir, level=self._log_level, log_filename=self._log_filename)
         p0, output_file = dat
         if self._criterion in EXPLICIT_CRITERIA:
             criterion = self._criterion
