@@ -18,7 +18,7 @@ pyyaml==6.0.2
 # statistical models: pyhf with the tensorflow and jax backends, used through spey
 pyhf==0.7.6
 spey==0.2.7
-spey-pyhf==0.2.0
+spey-pyhf==0.2.2
 
 # pyhf backends and the MCMC sampler
 tensorflow==2.18.0
