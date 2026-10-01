@@ -1,0 +1,64 @@
+# Python dependencies for the training code (run.py and friends).
+# Tested with Python 3.11.
+#
+# Setup:
+#   conda create -n olltrain python=3.11 -y && conda activate olltrain
+#   pip install -r requirements.txt
+#
+# This was traced through the actual import graph starting from run.py
+# (experiment.py -> base_experiment.py -> models/*, wrappers.py,
+# preprocessing.py, ...), not just copied from the README - several of these
+# (lion-pytorch, torch-ema, schedulefree, einops, opt-einsum, torch-geometric,
+# tqdm) are real, unconditional imports the README's install line misses.
+# models/__init__.py eagerly imports every model class regardless of which
+# one is selected via config, so transformer.py's einops/opt_einsum and
+# base_experiment.py's IntrinsicDimDeep import are needed no matter what
+# model=... you pick.
+
+# core framework - CUDA-enabled build (a GPU is present on this machine)
+torch==2.14.1
+torchvision==0.29.1
+
+# config system (run.py's entry point)
+hydra-core==1.3.7
+omegaconf==2.3.1
+
+# numerics / data / preprocessing
+numpy==2.4.6
+pandas==3.0.6
+scipy==1.17.1
+scikit-learn==1.9.1
+
+# plotting
+matplotlib==3.11.2
+
+# experiment tracking (mlflow_util.py)
+mlflow==3.16.1
+
+# ONNX - onnx is used directly in base_experiment.py; onnxruntime/autograd are
+# only needed for the export/inference tooling (nnAdapter.py,
+# export_onnx_from_run.py, preprocessing_nnAdapter.py, update_metadata.py),
+# not for training itself, but kept here for the full train/ toolkit
+onnx==1.23.1
+onnxruntime==1.30.0
+autograd==1.9.1
+
+# optimizer / EMA utilities (base_experiment.py)
+mup==1.0.0
+lion-pytorch==0.2.5
+torch-ema==0.3
+schedulefree==1.4.1
+
+# used unconditionally by models/transformer.py (always imported via
+# models/__init__.py, regardless of which model config is selected)
+einops==0.8.2
+opt-einsum==3.4.0
+
+# wrappers.py's dense_to_sparse (used by every model wrapper, not just graph models)
+torch-geometric==2.8.0.post1
+
+# IntrinsicDimDeep/get_dim.py (always imported by base_experiment.py)
+tqdm==4.70.1
+
+# update_metadata.py
+pyyaml==6.0.3
