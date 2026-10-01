@@ -46,9 +46,20 @@ standardization.
 ## Deployment (ONNX)
 
 ```bash
-# export a trained run to ONNX (preprocessing stored as metadata)
-python export_onnx_from_run.py <run_dir> <reference_rafal_onnx> <out.onnx>
+# export a trained run to ONNX with OLLL v0.1 metadata
+python export_onnx_from_run.py runs/<exp>/<run> --generation data/<dataset>.json \
+    [--label EWKinos] [--filtering "how the training data was cut"] [--out model.onnx]
 ```
+
+`--generation` is the JSON the sampling pipeline (`sampling/` in OLLL-Train) writes
+next to every CSV it produces; it is the default when it sits next to the dataset
+in `data/`. It provides the statistical model (background-only file, channels,
+yields, removed channels), the maximum likelihoods `nLL_*_max` and the sampling
+settings; everything else comes from the run and its training data. The file is
+only written if, decoded from its own metadata, it reproduces held-out training
+rows, passes the OLLL v0.1 validator (`tools/olll_validate.py`) and loads in
+`hep_olll`. A new ATLAS analysis needs one entry (arXiv, INSPIRE, HEPData DOI) in
+`ANALYSES` in `olll_metadata.py`.
 
 Inference is done through `hep_olll.NNAdapter`, which reapplies the
 metadata-stored preprocessing, runs onnxruntime, and reconstructs the absolute nLL

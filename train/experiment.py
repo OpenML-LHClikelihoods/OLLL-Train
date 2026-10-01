@@ -32,29 +32,11 @@ def log_gpu_memory(tag=""):
         reserved = torch.cuda.memory_reserved() / 1e9
         LOGGER.info(f"[{tag}] GPU allocated={allocated:.2f} GB, reserved={reserved:.2f} GB")
 
+# Particle type of each input, for the architectures that build per-particle
+# structure from it (TOKEN_MODELS: amplitude-era, legacy). Every other model,
+# and the likelihood MLPs in particular, ignores it: a dataset not listed here
+# gets one type for all its inputs, so a new dataset needs no entry.
 TYPE_TOKEN_DICT = {
-    '1911.06660-leakage-10_': [0],
-    '1911.06660-leakage-10__cleaned': [0],
-    '1909.09226-leakage-10_': [0],
-    '1908.08215-400k-fluct20_': [0],
-    "1911.12606-EWKinos-1M-z4-nll400-delta200": [0],
-    "1911.12606-EWKinos-1M-z4-nll400-delta200-obs60plus": [0],
-    "1911.12606-EWKinos-1M-z4-nll400-delta200-obs40cut": [0],
-    "1911.12606-EWKinos-1M-z4-nll400-delta200-exp60plus": [0],
-    "1911.12606-sleptons-700k-fluct30%-nll300--delta300-z3": [0],   
-    "1911.12606-sleptons-200k-fluct20_": [0],   
-    '2106.01676-offshell-higgsino-300k-fluct20_': [0],
-    '2106.01676-offshell-winobino-minus-300k-fluct20_': [0],
-    '2106.01676-offshell-winobino-plus-fluct20_-300k': [0],
-    '2106.01676-onshell-winobino-fluct25_-300k': [0],
-    '2106.01676-offshell-TChiWZoff-jsons2': [0],
-    '2106.01676-winobino-minus-jsons2-rehearsal': [0],
-    '2106.01676-winobino-minus-tchiwzoff-retrain': [0],
-    "1911.12606-EWKinos-1M-fluct100_new-trim": [0],
-    "1911.12606-sleptons-scan201816": [0],
-    "1911.12606-EWKinos-scan201816": [0],
-    "1911.12606-EWKinos-158k-boundaryscan": [0],
-    "1911.12606-sleptons-153k-boundaryscan": [0],
     "aag": [0, 0, 1, 1, 0],
     "aagg": [0, 0, 1, 1, 0, 0],
     "zg": [0, 0, 1, 2],
@@ -64,6 +46,18 @@ TYPE_TOKEN_DICT = {
     "zggggg": [0, 0, 1, 2, 2, 2, 2, 2],
     "wz": [0, 0, 1, 2],
 }
+TOKEN_MODELS = {"DSI", "FV_MLP", "subamp_MLP"}
+
+
+def dataset_type_token(dataset, modelname):
+    """The dataset's type token: its entry above, or [0] for a model that ignores it."""
+    if dataset in TYPE_TOKEN_DICT:
+        return TYPE_TOKEN_DICT[dataset]
+    if modelname in TOKEN_MODELS:
+        raise KeyError(f"{modelname} needs the particle types of {dataset!r}: add it to TYPE_TOKEN_DICT")
+    return [0]
+
+
 DATASET_TITLE_DICT = {
     '1911.06660-leakage-10_': r"1911.06660",
     '1911.06660-leakage-10__cleaned': r"1911.06660",
@@ -101,6 +95,16 @@ DATASET_TITLE_DICT = {
     "zggggg": r"$q\bar q \to Zggggg$",
     "wz": r"$q\bar q \to WZ$",
 }
+
+
+def dataset_title(dataset):
+    """Plot title: the entry in DATASET_TITLE_DICT, else the dataset name itself
+    (escaped: plots are rendered with LaTeX, where _ % & # $ are special)."""
+    if dataset in DATASET_TITLE_DICT:
+        return DATASET_TITLE_DICT[dataset]
+    return "".join("\\" + c if c in "_%&#$" else c for c in dataset)
+
+
 MODEL_TITLE_DICT = {
     "Transformer": "Tr",
     "MLP": "MLP",
@@ -118,19 +122,21 @@ class nLLsExperiment(BaseExperiment):
         ), "nLLs experiment assumes default torch attention"
         self.n_datasets = len(self.cfg.data.dataset)
 
+        modelname = self.cfg.model.net._target_.rsplit(".", 1)[-1]
+
         # create type_token list
         self.type_token = []
         for dataset in self.cfg.data.dataset:
+            tokens = dataset_type_token(dataset, modelname)
             if self.cfg.data.include_permsym:
-                self.type_token.append(TYPE_TOKEN_DICT[dataset])
+                self.type_token.append(tokens)
             else:
-                self.type_token.append(list(range(len(TYPE_TOKEN_DICT[dataset]))))
+                self.type_token.append(list(range(len(tokens))))
 
         token_size = max(
             [max([max(token) for token in self.type_token]) + 1, self.n_datasets]
         )
         OmegaConf.set_struct(self.cfg, True)
-        modelname = self.cfg.model.net._target_.rsplit(".", 1)[-1]
         if modelname in ["GAP", "MLP", "DSI"]:
             assert len(self.cfg.data.dataset) == 1, (
                 f"Architecture {modelname} can not handle several datasets "
@@ -141,9 +147,9 @@ class nLLsExperiment(BaseExperiment):
             if modelname == "LGATr":
                   self.cfg.model.net.in_s_channels = token_size
                   self.cfg.model.token_size = token_size
-            self.cfg.model.net.type_token_list = TYPE_TOKEN_DICT[
-                self.cfg.data.dataset[0]
-            ]
+            self.cfg.model.net.type_token_list = dataset_type_token(
+                self.cfg.data.dataset[0], modelname
+            )
             assert (
                 len(np.unique(self.cfg.model.net.type_token_list))
                 == max(self.cfg.model.net.type_token_list) + 1
@@ -815,7 +821,7 @@ class nLLsExperiment(BaseExperiment):
         plot_path = os.path.join(self.cfg.run_dir, f"plots_{self.cfg.run_idx}")
         os.makedirs(plot_path)
         dataset_titles = [
-            DATASET_TITLE_DICT[dataset] for dataset in self.cfg.data.dataset
+            dataset_title(dataset) for dataset in self.cfg.data.dataset
         ]
         model_title = MODEL_TITLE_DICT[type(self.model.net).__name__]
         title = [f"{model_title}: {dataset_title}" for dataset_title in dataset_titles]

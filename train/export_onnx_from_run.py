@@ -1,15 +1,91 @@
-import os
+"""
+Export a trained run to ONNX with OLLL v0.1 metadata.
+
+    python export_onnx_from_run.py RUN_DIR [--generation GEN.json] [--analysis ATLAS-SUSY-...]
+                                   [--label NAME] [--filtering TEXT] [--nll-max JSON]
+                                   [--run-idx N] [--out OUT.onnx]
+
+Example (a run trained on data/1911.12606-70k-uncertainty.npy, with the
+generator's data/1911.12606-70k-uncertainty.json next to it):
+
+    python export_onnx_from_run.py runs/my_exp/20261001_120000_MuMLP_1234 --label EWKinos
+
+Run it from the repository root, where the run directory and the training data
+are (it rebuilds the experiment and reads the data). No GPU needed.
+
+Inputs
+  RUN_DIR       runs/<exp>/<run>/: config_<idx>.yaml and models/model_run<idx>.pt[.gz]
+                (the lowest config index present if <idx> = --run-idx is missing).
+  --generation  GEN.json, the record the data-generation pipeline (sampling/ in
+                OLLL-Train) writes next to every CSV it produces. Default:
+                <data_path>/<dataset>.json of the run's config. It must hold
+                bkgfiles, channels, obs_yields, bkg_yields, bkg_unc, removeCRsVRs,
+                remove_channels and nLL_{exp,obs}_max, nLLA_{exp,obs}_max as
+                [mu_hat, nLL]. No previously published model is needed.
+  --analysis    ATLAS-SUSY-YYYY-NN. Default: the record's analysis_altname. A new
+                analysis needs one entry (arXiv, INSPIRE, HEPData DOI) in
+                olll_metadata.ANALYSES.
+  --label       the model within the analysis (EWKinos, Sleptons, Offshell, ...);
+                goes into model_name, e.g. ATLAS-SUSY-2018-16_EWKinos_MuMLP-5x512.
+  --filtering   how the training dataset was derived from the generated scan
+                (e.g. "rows with delta nLL_obs > 40 removed"); default "none".
+  --nll-max     '{"nLL_exp_max": [mu_hat, nll], ...}' to supply *_max values the
+                record lacks. A null *_max in the record means the generator's
+                maximum-likelihood fit failed (sampling/likelihood.py,
+                calculate_Lmax); re-running it is better than typing values in.
+  --out         default RUN_DIR/models/model_with_metadata.onnx.
+
+Where each part of the metadata comes from (olll_metadata.py builds it):
+  - network, run_config, preprocessing, standardization  <- this run
+  - bounds x/y_min/max, mu=0 baselines                   <- the run's training data
+                                                            (same train split as the run)
+  - source (paper, HEPData record)                       <- olll_metadata.ANALYSES
+  - statistical model, *_max, generation settings        <- GEN.json
+    (incl. sig_rel_unc, the signal uncertainty the generator put in the likelihood)
+
+The inputs are declared as total yields (background + signal) per active bin,
+in the order of bkg_yields minus remove_channels: the training data must be in
+that form. A record that merges several scans can flag more than one patchset
+as used; the model is then the one whose channel map holds exactly the regions
+of bkg_yields, and only its patchset is recorded.
+
+The file is only written if it checks out: decoded from its own metadata it
+must reproduce held-out rows of the training data (median relative error on
+nLL(mu=1) below 1%), the architecture it states must be the one in the graph,
+S. Kraml's validator (tools/olll_validate.py) must report no errors, and the
+OLLL adapter (hep_olll) must load it. Otherwise it stops and says why. With
+jsonschema installed, hep_olll's own metadata validator runs too.
+"""
+
+import argparse
 import gzip
 import inspect
 import json
-import datetime
-import numpy as np
-import torch
-import onnx
+import math
+import os
+import sys
+import tempfile
 
+import numpy as np
+import onnx
+import onnxruntime as ort
+import torch
+import yaml
 from omegaconf import OmegaConf
+
 from experiment import nLLsExperiment
 from misc import get_device
+import olll_metadata as om
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+from olll_training_stats import training_stats  # noqa: E402
+from olll_publish import CLOSURE_TOL, closure, graph_architecture  # noqa: E402
+
+# what the generation record must provide
+RECORD_KEYS = ["bkgfiles", "channels", "obs_yields", "bkg_yields", "bkg_unc",
+               "removeCRsVRs", "remove_channels"]
+MU0_TOL = 1e-3
 
 
 def load_model_gz(path, device):
@@ -38,16 +114,8 @@ class ExportAdapter(torch.nn.Module):
         return self.model(features, global_token, global_token)
 
 
-def main(run_dir, rafal_onnx_path, out_onnx=None, run_idx=0):
-    device = get_device()
-    
-    # Set default output path in the run's models folder
-    if out_onnx is None:
-        out_onnx = os.path.join(run_dir, "models", "model_with_metadata.onnx")
-    
-    # ------------------------------------------------------------------
-    # 1. Load config from existing run
-    # ------------------------------------------------------------------
+def load_run(run_dir, run_idx, device):
+    """(cfg, experiment with the trained weights loaded, run_idx actually used)."""
     cfg_path = os.path.join(run_dir, f"config_{run_idx}.yaml")
     if not os.path.exists(cfg_path):
         # Retraining runs start at index 1+; find the lowest available config
@@ -61,13 +129,10 @@ def main(run_dir, rafal_onnx_path, out_onnx=None, run_idx=0):
         cfg_path = os.path.join(run_dir, f"config_{run_idx}.yaml")
         print(f"[INFO] config_0.yaml not found; using config_{run_idx}.yaml")
     cfg = OmegaConf.load(cfg_path)
-    
-    # ------------------------------------------------------------------
-    # 2. Recreate experiment JUST enough to get preprocessing + model
-    # ------------------------------------------------------------------
+
+    # Recreate the experiment just enough to get preprocessing + model
     exp = nLLsExperiment(cfg, device)
-    # minimal attributes normally set by BaseExperiment._init()
-    exp.warm_start = False
+    exp.warm_start = False   # normally set by BaseExperiment._init()
     exp.dtype = torch.float32
     exp.init_physics()
     exp.init_data()
@@ -77,242 +142,206 @@ def main(run_dir, rafal_onnx_path, out_onnx=None, run_idx=0):
     # model whose clamp constants were still +-inf, i.e. silently unbounded.
     exp._init_dataloader()
     exp.init_model()
-    
-    # ------------------------------------------------------------------
-    # 3. Load trained weights
-    # ------------------------------------------------------------------
-    model_path_gz = os.path.join(run_dir, "models", f"model_run{run_idx}.pt.gz")
-    model_path_pt = os.path.join(run_dir, "models", f"model_run{run_idx}.pt")
-    if os.path.exists(model_path_gz):
-        model_path = model_path_gz
-        checkpoint = load_model_gz(model_path, device)
-    elif os.path.exists(model_path_pt):
-        model_path = model_path_pt
-        checkpoint = torch.load(model_path, map_location=device)
+
+    gz = os.path.join(run_dir, "models", f"model_run{run_idx}.pt.gz")
+    pt = os.path.join(run_dir, "models", f"model_run{run_idx}.pt")
+    if os.path.exists(gz):
+        checkpoint = load_model_gz(gz, device)
+    elif os.path.exists(pt):
+        checkpoint = torch.load(pt, map_location=device)
     else:
-        raise AssertionError(f"Missing {model_path_gz} and {model_path_pt}")
-    state_dict = checkpoint["model"]
-    exp.model.load_state_dict(state_dict)
+        raise FileNotFoundError(f"Missing {gz} and {pt}")
+    exp.model.load_state_dict(checkpoint["model"])
     exp.model.eval()
-    
-    # ------------------------------------------------------------------
-    # 4. Export ONNX
-    # ------------------------------------------------------------------
-    batch_size = 1
-    global_token = torch.zeros(batch_size, dtype=torch.long, device=device)
-    dummy_features = torch.zeros(
-        1,
-        cfg.model.net.n_features,
-        device=device,
-    )
-    dummy_global_token = torch.zeros(
-        1,
-        dtype=torch.long,
-        device=device,
-    )
-    
+    return cfg, exp, run_idx
+
+
+def export_graph(exp, n_features, device, path):
     export_kwargs = {}
     if "dynamo" in inspect.signature(torch.onnx.export).parameters:
         # torch>=2.6 defaults to the dynamo exporter. Stay on the TorchScript
         # path the published models_onnx/ files were produced with.
         export_kwargs["dynamo"] = False
-
     torch.onnx.export(
         ExportAdapter(exp.model),
-        (dummy_features, dummy_global_token),
-        "_tmp.onnx",
+        (torch.zeros(1, n_features, device=device), torch.zeros(1, dtype=torch.long, device=device)),
+        path,
         opset_version=17,
         input_names=["features", "global_token"],
         output_names=["nLLs"],
-        dynamic_axes={
-            "features": {0: "batch"},
-            "global_token": {0: "batch"},
-            "nLLs": {0: "batch"},
-        },
+        dynamic_axes={"features": {0: "batch"}, "global_token": {0: "batch"}, "nLLs": {0: "batch"}},
         **export_kwargs,
     )
-    
-    # ------------------------------------------------------------------
-    # 5. Read Rafal's ONNX metadata
-    # ------------------------------------------------------------------
-    rafal_onnx = onnx.load(rafal_onnx_path)
-    rafal_metadata = {p.key: p.value for p in rafal_onnx.metadata_props}
 
-    # Print Rafal's ONNX size
-    rafal_size_mb = os.path.getsize(rafal_onnx_path) / (1024 * 1024)
-    print(f"Rafal's ONNX size: {rafal_size_mb:.2f} MB")
 
-    # ------------------------------------------------------------------
-    # 5b. Compute x/y min/max from training split
-    # ------------------------------------------------------------------
-    train_frac = cfg.data.train_test_val[0]
-    subsample = cfg.data.get("subsample")
-    features_raw = exp.features[0]   # raw (unpreprocessed) features
-    nLLs_raw = exp.nLLs[0]           # raw delta-nLLs (4 differences, unpreprocessed)
-    N = features_raw.shape[0]
-    n_train = int(N * train_frac)
-    if subsample is not None:
-        n_train = min(int(subsample), n_train)
-    x_train = features_raw[:n_train]
-    y_train = nLLs_raw[:n_train]
-    x_min = x_train.min(axis=0).tolist()
-    x_max = x_train.max(axis=0).tolist()
-    y_min = y_train.min(axis=0).tolist()
-    y_max = y_train.max(axis=0).tolist()
+def load_record(path, nll_max):
+    """The generation record, checked for what the metadata needs."""
+    with open(path) as f:
+        rec = json.load(f)
+    missing = [k for k in RECORD_KEYS if k not in rec]
+    if missing:
+        sys.exit(f"{path}: no {missing}; not a generation record")
+    if nll_max:
+        rec.update(json.loads(nll_max))
+    bad = [k for k in om.MAX_KEYS
+           if not (isinstance(rec.get(k), list) and len(rec[k]) == 2
+                   and all(isinstance(v, (int, float)) and math.isfinite(v) for v in rec[k]))]
+    if bad:
+        sys.exit(f"{path}: {bad} not recorded ({[rec.get(k) for k in bad]}). OLLL v0.1 requires "
+                 "each as [mu_hat, nLL at mu_hat]; the generator computes them on its first "
+                 "scan point (sampling/likelihood.py calculate_Lmax), and a null means that fit "
+                 "failed. Re-run it, or pass the values with --nll-max.")
+    return rec
 
-    # ------------------------------------------------------------------
-    # 6. Attach metadata to new ONNX
-    # ------------------------------------------------------------------
-    new_onnx = onnx.load("_tmp.onnx")
 
-    # Which reference keys are dropped, and which ones only we may write, is
-    # defined once in update_metadata.py (the publish-time normalizer) and
-    # imported here — the two stages disagreeing is what let stale keys through.
-    #
-    # MODEL_OWNED_KEYS must cover EVERY key this script writes below. Anything
-    # written but not listed there ends up in the file *twice* — once inherited
-    # from the reference, once ours — and which one a consumer sees depends on
-    # whether it parses first- or last-match. That silently mismatched
-    # `standardization`/`preprocessing` against the wrong pipeline on real
-    # published models; first-match decoding gave 34-47% relative error where the
-    # correct spec gives <1%. The mu=0 baselines are in that set for the same
-    # reason: consumers rebuild the physical value as nLL_*_mu0 + delta, so
-    # inheriting the reference's baselines offsets every absolute nLL. The
-    # 2018-16 scans sit +0.918939 (=0.5*ln(2*pi)) above the older data because
-    # spey's normalisation changed.
-    from update_metadata import REFERENCE_KEYS_TO_DROP, MODEL_OWNED_KEYS
-    from olll_metadata import MODEL_AUTHOR
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("run_dir")
+    ap.add_argument("--generation", help="generation record (default: <data_path>/<dataset>.json)")
+    ap.add_argument("--analysis", choices=sorted(om.ANALYSES),
+                    help="ATLAS analysis ID (default: the record's analysis_altname)")
+    ap.add_argument("--label", help="model within the analysis, e.g. EWKinos, used in model_name")
+    ap.add_argument("--filtering", default="none",
+                    help="how the training dataset was derived from the generated scan")
+    ap.add_argument("--nll-max", help='JSON {"nLL_exp_max": [mu_hat, nll], ...} for a record without them')
+    ap.add_argument("--run-idx", type=int, default=0)
+    ap.add_argument("--out", help="default: RUN_DIR/models/model_with_metadata.onnx")
+    args = ap.parse_args()
 
-    # Rafal's metadata — strip prefix, skip dropped/replaced keys
-    for k, v in rafal_metadata.items():
-        clean_key = k[len("rafal::"):] if k.startswith("rafal::") else k
-        if clean_key in REFERENCE_KEYS_TO_DROP or clean_key in MODEL_OWNED_KEYS:
-            continue
-        p = new_onnx.metadata_props.add()
-        p.key = clean_key
-        p.value = v
+    device = get_device()
+    cfg, exp, run_idx = load_run(args.run_dir, args.run_idx, device)
+    run_config = OmegaConf.to_yaml(cfg)   # as stored by the run, interpolations kept
+    cfgd = OmegaConf.to_container(cfg, resolve=True)
+    datasets = list(cfgd["data"]["dataset"])
+    assert len(datasets) == 1, f"one dataset per published model, run has {datasets}"
+    dataset, data_dir = datasets[0], cfgd["data"]["data_path"]
+    n_features = int(cfgd["model"]["net"]["n_features"])
+    out = args.out or os.path.join(args.run_dir, "models", "model_with_metadata.onnx")
+    log = []
 
-    # Computed min/max from Joaquin's training data
-    for key, val in [("x_min", x_min), ("x_max", x_max), ("y_min", y_min), ("y_max", y_max)]:
-        p = new_onnx.metadata_props.add()
-        p.key = key
-        p.value = json.dumps(val)
+    # -- the analysis side, from the generation record
+    gen_path = args.generation or os.path.join(data_dir, f"{dataset}.json")
+    rec = load_record(gen_path, args.nll_max)
+    analysis = args.analysis or rec.get("analysis_altname")
+    if analysis not in om.ANALYSES:
+        sys.exit(f"analysis {analysis!r} unknown: pass --analysis, and add it to olll_metadata.ANALYSES "
+                 "if it is new")
+    if rec.get("analysis"):
+        assert rec["analysis"] == om.ANALYSES[analysis]["arxiv"], (rec["analysis"], analysis)
+    removed = set(rec["remove_channels"] or [])
+    active = [b[0] for b in rec["bkg_yields"] if b[0].rsplit("-", 1)[0] not in removed]
+    assert len(active) == n_features, \
+        f"{gen_path}: {len(active)} active bins, the network takes {n_features} inputs"
+    log.append(f"generation record {gen_path}: model {om.active_statistical_model(rec)[0]}, "
+               f"{n_features} input bins")
 
-    # Run config
-    p = new_onnx.metadata_props.add()
-    p.key = "run_config"
-    p.value = OmegaConf.to_yaml(cfg)
+    # -- the data side, from the training data (same split as the run)
+    stats = training_stats(data_dir, dataset, cfgd["data"]["train_test_val"][0],
+                           cfgd["data"].get("subsample"))
+    assert stats["n_features"] == n_features, (stats["n_features"], n_features)
+    mu0 = stats["mu0"]
+    run_mu0 = np.asarray(exp.nLL_mu0[0]).ravel()
+    assert np.allclose(run_mu0, mu0, atol=MU0_TOL), f"mu=0 baselines: run {run_mu0} vs data {mu0}"
+    if isinstance(rec.get("y_min"), list) and len(rec["y_min"]) == 8:
+        # the generator's y_min covers the 8 absolute nLL columns; the mu=0 ones are constant
+        rec_mu0 = rec["y_min"][0::2]
+        if not np.allclose(rec_mu0, mu0, atol=MU0_TOL):
+            sys.exit(f"mu=0 baselines: record {rec_mu0} vs training data {mu0}: "
+                     "the record is not the one of this dataset")
+    if stats["n_sentinel_train_rows"]:
+        log.append(f"bounds exclude {stats['n_sentinel_train_rows']} failed-fit rows (|nLL| >= 1e9)")
+    if isinstance(rec.get("lower_limits"), list):
+        lo = [v for b, v in zip(rec["bkg_yields"], rec["lower_limits"])
+              if b[0].rsplit("-", 1)[0] not in removed]
+        below = int(np.sum(np.asarray(stats["x_min"]) < np.asarray(lo) - 1e-3))
+        if below:
+            log.append(f"NOTE {below} input bins have training yields below the record's lower_limits "
+                       "(expected only for regions with signal leakage)")
 
-    # Standardization stats
-    stats = {
+    # -- the network
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_onnx = os.path.join(tmp, "graph.onnx")
+        export_graph(exp, n_features, device, tmp_onnx)
+        model = onnx.load(tmp_onnx)
+    n_in, width, depth, n_out = graph_architecture(model)
+    net = cfgd["model"]["net"]
+    assert (n_in, width, depth, n_out) == (n_features, net["hidden_channels"], net["hidden_layers"], 8), \
+        f"graph {(n_in, width, depth, n_out)} vs run_config {net}"
+
+    std = {
         "nLLs_mean": [m.tolist() for m in exp.prepd_mean],
         "nLLs_std": [s.tolist() for s in exp.prepd_std],
         "features_mean": [m.tolist() for m in exp.prepd_mean_features],
         "features_std": [s.tolist() for s in exp.prepd_std_features],
     }
-    bounds = exp.prepd_nll_bounds[0] if exp.prepd_nll_bounds else {}
-    if "lo" in bounds:  # logit_bounded only; per-output spec carries no lo/hi
-        stats["nLLs_lo"] = np.asarray(bounds["lo"]).tolist()
-        stats["nLLs_hi"] = np.asarray(bounds["hi"]).tolist()
-    p = new_onnx.metadata_props.add()
-    p.key = "standardization"
-    p.value = json.dumps(stats)
+    nll_bounds = exp.prepd_nll_bounds[0] if exp.prepd_nll_bounds else {}
+    if "lo" in nll_bounds:  # logit_bounded only; per-output spec carries no lo/hi
+        std["nLLs_lo"] = np.asarray(nll_bounds["lo"]).tolist()
+        std["nLLs_hi"] = np.asarray(nll_bounds["hi"]).tolist()
 
-    # Preprocessing pipeline description (derived from the actual training config)
-    trafos = OmegaConf.to_container(cfg.data.get("trafos") or {}, resolve=True)
-    feat_pipeline = []
-    for trafo_fns in trafos.values():
-        if isinstance(trafo_fns, list):
-            feat_pipeline.extend(trafo_fns)
-    # keep the container as-is: a flat list, or the per-output mapping
-    # {"per_output": [...], "asinh_scale": s} (list(dict) would drop to keys)
-    nll_pipeline = OmegaConf.to_container(cfg.data.get("nLL_trafos") or [], resolve=True)
+    run_log = os.path.join(args.run_dir, f"out_{run_idx}.log")
+    if os.path.exists(run_log):
+        date, duration = om.run_log_times(run_log)
+    else:
+        date, duration = om.training_date_from_run_name(cfgd.get("run_name")), None
+        log.append(f"no {run_log}: training_duration omitted")
 
-    p = new_onnx.metadata_props.add()
-    p.key = "preprocessing"
-    p.value = json.dumps({
-        "features_pipeline": feat_pipeline,
-        "nLLs_pipeline": nll_pipeline,
-        "note": (
-            "log_w_negatives = log(|x|+1)*sign(x). "
-            "Standardization parameters (mean, std per feature/output) "
-            "are stored in the 'standardization' key."
-        ),
-    })
+    meta = om.build_metadata(
+        analysis_id=analysis,
+        model_name=om.model_name(analysis, args.label, depth, width),
+        run_config=run_config,
+        standardization=std,
+        reference=rec,
+        bounds={k: stats[k] for k in ("x_min", "x_max", "y_min", "y_max")},
+        mu0=mu0,
+        generation=om.normalize_generation(rec),
+        training_dataset={"name": dataset, "n_rows": stats["n_rows"], "filtering": args.filtering},
+        training_date=date,
+        training_duration=duration,
+    )
+    om.write_metadata(model, meta)
 
-    # Model identity, derived from THIS run's config rather than inherited. Without
-    # this the file keeps the reference model's architecture/optimizer/batchsize,
-    # which describes a different network entirely.
-    net = cfg.model.net
-    act = str(net.get("activation", "gelu"))
-    model_params = {
-        "architecture": str(net._target_).rsplit(".", 1)[-1],
-        "hidden_channels": net.get("hidden_channels"),
-        "hidden_layers": net.get("hidden_layers"),
-        "activation": act,
-        "out_shape": 4,
-        "loss": str(cfg.training.get("loss")),
-        "optimizer": str(cfg.training.get("optimizer")),
-        "batchsize": cfg.training.get("batchsize"),
-        "lr": cfg.training.get("lr"),
-        "regularization": str(cfg.training.get("regularization")),
-        "regularization_lambda": cfg.training.get("regularization_lambda"),
-        "iterations": cfg.training.get("iterations"),
-    }
-    if isinstance(nll_pipeline, dict) and "asinh_scale" in nll_pipeline:
-        model_params["asinh_scale"] = nll_pipeline["asinh_scale"]
-    # mu=0 baselines measured from THIS run's data (init_data keeps them before
-    # subtracting). Constant per analysis, so the median is exact.
-    if getattr(exp, "nLL_mu0", None):
-        base = np.asarray(exp.nLL_mu0[0]).ravel()
-        for key, val in zip(["nLL_exp_mu0", "nLL_obs_mu0",
-                             "nLLA_exp_mu0", "nLLA_obs_mu0"], base):
-            p = new_onnx.metadata_props.add()
-            p.key = key
-            p.value = repr(float(val))
+    # -- checks on the file as a consumer sees it, before it is written out
+    with tempfile.TemporaryDirectory() as tmp:
+        cand = os.path.join(tmp, "model.onnx")
+        onnx.save(model, cand)
+        wm = {p.key: p.value for p in onnx.load(cand).metadata_props}
+        sample = np.asarray(stats["sample"], dtype=np.float64)
+        err = closure(ort.InferenceSession(cand), yaml.safe_load(wm["run_config"]),
+                      json.loads(wm["standardization"]), [float(wm[k]) for k in om.MU0_KEYS], sample)
+        log.append(f"closure on {len(sample)} held-out rows: median rel err nLL(mu=1) {np.round(err, 6).tolist()}")
+        if np.max(err) >= CLOSURE_TOL:
+            sys.exit("\n".join(log) + f"\nthe file does not reproduce its training data (tolerance {CLOSURE_TOL})")
 
-    ident = {
-        "model_author": MODEL_AUTHOR,
-        "model_name": f"{model_params['architecture']}_c{net.get('hidden_channels')}"
-                      f"_l{net.get('hidden_layers')}_{act}",
-        "model_parameters": json.dumps(model_params),
-        "training_date": datetime.datetime.fromtimestamp(
-            os.path.getmtime(model_path)).strftime("%Y-%m-%d %H:%M:%S"),
-    }
-    for k, v in ident.items():
-        p = new_onnx.metadata_props.add()
-        p.key = k
-        p.value = str(v)
+        import olll_validate
+        from pathlib import Path
+        report = olll_validate.Report(cand)
+        data, m2 = olll_validate.load_input(Path(cand), report)
+        olll_validate.validate(data, report, model=m2)
+        res = report.as_dict()
+        log.append(f"olll_validate: {res['status']} ({res['errors']} errors, {res['warnings']} warnings)")
+        log.extend(f"  [{i['severity']}] {i['code']}: {i['message']}" for i in res["issues"])
+        if res["errors"]:
+            sys.exit("\n".join(log))
 
-    # Guard: the duplication bug above is easy to reintroduce by adding a write
-    # without updating MODEL_OWNED_KEYS, and it fails silently. Fail loudly here.
-    seen = [p.key for p in new_onnx.metadata_props]
-    dups = {k for k in seen if seen.count(k) > 1}
-    assert not dups, f"duplicate metadata keys {sorted(dups)} — add them to MODEL_OWNED_KEYS"
+        from hep_olll.nnAdapter import NNAdapter
+        try:
+            import jsonschema  # noqa: F401  (the adapter's own validator needs it)
+            check_meta = True
+        except ImportError:
+            check_meta = False
+            log.append("hep_olll metadata validator skipped: jsonschema not installed")
+        adapter = NNAdapter(cand, validate_metadata=check_meta)
+        adapter.predict({s: 0.0 for s in adapter.srOrder})
+        log.append(f"hep_olll: loads and predicts ({len(adapter.srOrder)} inputs)")
 
-    onnx.save(new_onnx, out_onnx)
-    os.remove("_tmp.onnx")
-    
-    # Print final model size
-    final_size_mb = os.path.getsize(out_onnx) / (1024 * 1024)
-    print(f"Final ONNX size: {final_size_mb:.2f} MB")
-    print(f"Saved to: {out_onnx}")
+        os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+        onnx.save(model, out)
+
+    print(f"== {out}")
+    for line in log:
+        print("  " + line)
 
 
 if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) < 3:
-        print("Usage: python export_onnx_from_run.py <run_dir> <reference_onnx> [run_idx]")
-        print()
-        print("  run_dir        runs/<exp>/<run>/ — must still hold config_<idx>.yaml")
-        print("                 and models/model_run<idx>.pt(.gz)")
-        print("  reference_onnx one of Rafal's ONNX models for the SAME analysis; it is")
-        print("                 read only as a metadata donor (analysis/channels/yields/")
-        print("                 patchsets/license). Nothing of its network is used.")
-        print("  run_idx        checkpoint index, default 0")
-        print()
-        print("Writes <run_dir>/models/model_with_metadata.onnx")
-        sys.exit(1)
-
-    main(sys.argv[1], sys.argv[2], run_idx=int(sys.argv[3]) if len(sys.argv) > 3 else 0)
+    main()

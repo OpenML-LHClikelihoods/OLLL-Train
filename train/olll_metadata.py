@@ -78,6 +78,10 @@ GENERATION_KEYS = [
     "signal_leakage_VR", "signal_leakage_VR_spread", "signal_leakage_VR_sign",
     "lower_limits", "upper_limits", "initial_lower_limits",
     "folder_name", "filtering_applied",
+    # relative signal uncertainty the generator put on the signal sample (a
+    # normsys of this size): it is part of the likelihood the network learned.
+    # null = none recorded (the scans before it existed had none).
+    "sig_rel_unc",
 ]
 LEGACY_SPELLINGS = {"start method": "start_method", "scan": "scans"}
 
@@ -175,25 +179,60 @@ def training_date_from_run_name(run_name):
     return f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None
 
 
-def active_statistical_model(reference):
-    """(bkg-only filename, its channel map) of the model the scan was drawn from.
+def _region(bin_name):
+    """'SRee_eMT2a_hghmet_cuts-0' -> 'SRee_eMT2a_hghmet_cuts'."""
+    return bin_name.rsplit("-", 1)[0]
+
+
+def active_index(reference):
+    """Index, in the record's parallel lists, of the model the scan was drawn from.
 
     Multi-model analyses record every background file, patchset and channel map
-    of the archive in parallel lists, with the patchset used flagged true. Only
-    that entry describes this model.
+    of the archive in parallel lists, with the patchset(s) used flagged true.
+    One flag names the model. A merged record can flag several (the merge ORs
+    the flags of its sources); then the model is the one whose channel map holds
+    exactly the regions of bkg_yields.
     """
     bkgfiles = reference["bkgfiles"]
     channels = reference["channels"]
+    if not isinstance(channels, list):
+        assert len(bkgfiles) == 1, f"one channel map for {len(bkgfiles)} background files"
+        return 0
     patchsets = reference.get("patchsets") or []
     flags = [bool(p[1]) for p in patchsets if isinstance(p, list) and len(p) == 2]
-    if flags:
-        assert sum(flags) == 1, f"expected exactly one active patchset, got {patchsets}"
-        idx = flags.index(True)
-    else:
-        assert len(bkgfiles) == 1, f"no patchset flag to choose among {bkgfiles}"
-        idx = 0
-    chan = channels[idx] if isinstance(channels, list) else channels
-    return bkgfiles[idx], dict(chan)
+    candidates = [i for i, f in enumerate(flags) if f] if flags else list(range(len(bkgfiles)))
+    if len(candidates) == 1:
+        return candidates[0]
+    regions = {_region(b[0]) for b in reference["bkg_yields"]}
+    match = [i for i in candidates if set(channels[i]) == regions]
+    assert len(match) == 1, (f"cannot tell which model the scan used: flagged {candidates}, "
+                             f"{len(match)} of them have the regions of bkg_yields")
+    return match[0]
+
+
+def active_statistical_model(reference):
+    """(bkg-only filename, its channel map) of the model the scan was drawn from."""
+    idx = active_index(reference)
+    chan = reference["channels"]
+    chan = chan[idx] if isinstance(chan, list) else chan
+    return reference["bkgfiles"][idx], dict(chan)
+
+
+def model_name(analysis_id, label, depth, width):
+    """'ATLAS-SUSY-2018-16_EWKinos_MuMLP-5x512'."""
+    return f"{analysis_id}{'_' + label if label else ''}_MuMLP-{depth}x{width}"
+
+
+def run_log_times(path):
+    """(YYYY-MM-DD, HH:MM:SS) from a run log's first and 'Finished experiment' lines."""
+    import datetime
+    stamp = lambda line: datetime.datetime.strptime(line[1:20], "%Y-%m-%d %H:%M:%S")
+    lines = open(path).read().splitlines()
+    start = stamp(lines[0])
+    done = [l for l in lines if "Finished experiment" in l]
+    assert done, f"{path}: run did not finish"
+    secs = int((stamp(done[-1]) - start).total_seconds())
+    return start.date().isoformat(), f"{secs // 3600:02d}:{secs % 3600 // 60:02d}:{secs % 60:02d}"
 
 
 def build_metadata(*, analysis_id, model_name, run_config, standardization, reference,
@@ -217,6 +256,7 @@ def build_metadata(*, analysis_id, model_name, run_config, standardization, refe
 
     cfg = yaml.safe_load(run_config)
     src = ANALYSES[analysis_id]
+    idx = active_index(reference)
     bkgfile, channels = active_statistical_model(reference)
     data_cfg = cfg["data"]
 
@@ -272,11 +312,12 @@ def build_metadata(*, analysis_id, model_name, run_config, standardization, refe
     for key in GENERATION_KEYS:
         value = generation.get(key)
         if key == "patchsets" and isinstance(value, list):
-            # the patchset(s) the scan used, as paths inside the archive (like
+            # the patchset the scan used, as a path inside the archive (like
             # source.statistical_model.filename). The pipeline wrote either plain
-            # names or [name, used] pairs over every patchset of the archive.
-            used = [p[0] for p in value if isinstance(p, list) and len(p) == 2 and p[1]]
-            names = used or [p for p in value if isinstance(p, str)]
+            # names or [name, used] pairs over every patchset of the archive,
+            # parallel to bkgfiles.
+            pairs = [p for p in value if isinstance(p, list) and len(p) == 2]
+            names = [pairs[idx][0]] if pairs else [p for p in value if isinstance(p, str)]
             value = [src.get("archive_dir", "") + n for n in names]
         meta[key] = _dumps(value)
     return meta
