@@ -30,7 +30,7 @@ data:
  # Pin input/output normalization to the pretrained model's baked-in stats so OLD
  # data is decoded exactly as before (retention); refitting on the mix is what
  # degraded old.
- fixed_stats_onnx: /eos/user/j/joiturri/likelihoods/models_onnx/SUSY-2019-09_Offshell_Winobino_Minus_asinh.onnx
+ fixed_stats_onnx: ${oc.env:PROJECT_DIR,.}/models_onnx/SUSY-2019-09_Offshell_Winobino_Minus_asinh.onnx
 
 train: true
 training:

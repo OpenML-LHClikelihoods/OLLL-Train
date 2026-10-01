@@ -1,7 +1,7 @@
 exp_name: release_v2
 exp_type: nLLs
 run_name: SUSY-2018-32
-base_dir: /eos/user/j/joiturri/likelihoods
+base_dir: ${oc.env:PROJECT_DIR,.}
 jobid: null
 seed: null
 debug: false
@@ -95,7 +95,7 @@ model:
 data:
   dataset:
   - 1908.08215-400k-fluct20_
-  data_path: /eos/user/j/joiturri/likelihoods/data
+  data_path: ${oc.env:PROJECT_DIR,.}/data
   subsample: null
   include_permsym: true
   train_test_val:

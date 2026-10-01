@@ -2,11 +2,11 @@
 
 Neural-network surrogates for **ATLAS SUSY-search likelihoods**. Given a point's
 signal-region **yields**, an MLP predicts the four **negative-log-likelihood (nLL)
-deltas** `[exp, obs, expA, obsA]`, the `μ=1 − μ=0` differences of the profiled
+deltas** `[exp, obs, expA, obsA]` — the `μ=1 − μ=0` differences of the profiled
 likelihood for {expected, observed, Asimov-expected, Asimov-observed}. Models are
 trained per ATLAS analysis (datasets named by arXiv ID) and exported to **ONNX**
 with all pre/post-processing carried as metadata, so a consumer only needs the
-`.onnx` file and `nnAdapter.py`.
+`.onnx` file and the `hep_olll` adapter.
 
 ## Install
 
@@ -38,7 +38,8 @@ and writes checkpoints, predictions, and plots under `runs/<exp_name>/<run_name>
 ## Data
 
 Datasets are `.npy` files in `data/`, named `<arXivID>-<channel>-<size>-<tag>.npy`.
-Each row is `[ yields… | 8 nLL columns ]`; the 8 nLL columns are baseline subtracted into the **4 delta targets** `[exp, obs, expA, obsA]`. Inputs and
+Each row is `[ yields… | 8 nLL columns ]`; the 8 nLL columns are baseline-
+subtracted into the **4 delta targets** `[exp, obs, expA, obsA]`. Inputs and
 targets are preprocessed with a signed-log (`sign(x)·log1p(|x|)`) followed by
 standardization.
 
@@ -49,9 +50,19 @@ standardization.
 python export_onnx_from_run.py <run_dir> <reference_rafal_onnx> <out.onnx>
 ```
 
-Inference is done through `nnAdapter.py` (`NNAdapter`), which reapplies the
+Inference is done through `hep_olll.NNAdapter`, which reapplies the
 metadata-stored preprocessing, runs onnxruntime, and reconstructs the absolute nLL
-as `nll(μ=1) = nLL_mu0 + delta`.
+as `nll(μ=1) = nLL_mu0 + delta`:
+
+```python
+from hep_olll.nnAdapter import NNAdapter
+adapter = NNAdapter("SUSY-2018-04.onnx")
+adapter.predict({"SR1cut_cuts-0": 3.0, "SR2cut_cuts-0": 1.5})   # signal yields
+```
+
+`hep_olll/` is a copy of the adapter maintained in the OLLL repository
+(https://github.com/OpenML-LHClikelihoods/OLLL, commit `267770c2`); update it from
+there rather than editing it here. Its metadata validator needs `jsonschema`.
 
 ## Layout
 
@@ -63,5 +74,6 @@ as `nll(μ=1) = nLL_mu0 + delta`.
 | `models/` | model implementations (μP MLP is the maintained one) |
 | `wrappers.py`, `preprocessing.py`, `losses.py`, `dataset.py` | model wrapper, preprocessing, losses, dataset |
 | `config/` | Hydra configs |
-| `nnAdapter.py`, `export_*.py`, `update_metadata.py` | ONNX export + inference |
+| `hep_olll/` | inference adapter (copy of the OLLL repository's) |
+| `export_*.py`, `update_metadata.py`, `olll_metadata.py` | ONNX export + metadata |
 | `IntrinsicDimDeep/` | intrinsic-dimension diagnostics |

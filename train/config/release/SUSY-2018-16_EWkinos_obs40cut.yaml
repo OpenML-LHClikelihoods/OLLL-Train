@@ -1,7 +1,7 @@
 exp_name: release_v2
 exp_type: nLLs
 run_name: SUSY-2018-16_EWkinos_obs40cut
-base_dir: /eos/user/j/joiturri/likelihoods
+base_dir: ${oc.env:PROJECT_DIR,.}
 jobid: null
 seed: null
 debug: false
@@ -104,7 +104,7 @@ model:
 data:
   dataset:
   - 1911.12606-EWKinos-1M-z4-nll400-delta200-obs40cut
-  data_path: /eos/user/j/joiturri/likelihoods/data
+  data_path: ${oc.env:PROJECT_DIR,.}/data
   subsample: null
   include_permsym: true
   train_test_val:

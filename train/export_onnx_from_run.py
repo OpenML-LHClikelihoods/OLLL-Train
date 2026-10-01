@@ -181,6 +181,7 @@ def main(run_dir, rafal_onnx_path, out_onnx=None, run_idx=0):
     # 2018-16 scans sit +0.918939 (=0.5*ln(2*pi)) above the older data because
     # spey's normalisation changed.
     from update_metadata import REFERENCE_KEYS_TO_DROP, MODEL_OWNED_KEYS
+    from olll_metadata import MODEL_AUTHOR
 
     # Rafal's metadata — strip prefix, skip dropped/replaced keys
     for k, v in rafal_metadata.items():
@@ -271,7 +272,7 @@ def main(run_dir, rafal_onnx_path, out_onnx=None, run_idx=0):
             p.value = repr(float(val))
 
     ident = {
-        "model_author": "Joaquin Iturriaga",
+        "model_author": MODEL_AUTHOR,
         "model_name": f"{model_params['architecture']}_c{net.get('hidden_channels')}"
                       f"_l{net.get('hidden_layers')}_{act}",
         "model_parameters": json.dumps(model_params),

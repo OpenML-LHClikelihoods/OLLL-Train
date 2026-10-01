@@ -11,7 +11,7 @@ Everything lives in two directories:
   `(yields → nLL)` training rows from ATLAS `pyhf` workspaces. Entry point:
   `python sample.py parameters.yaml`.
 
-Workflow: `sampling/ → data/ → train/ → train/runs/... → ONNX → nnAdapter.py`.
+Workflow: `sampling/ → data/ → train/ → train/runs/... → ONNX → train/hep_olll` (the OLLL adapter).
 
 - `data/` — raw data tarballs, one per ATLAS analysis (keyed by arXiv ID).
 - `train/README.md` — full training + ONNX export documentation.

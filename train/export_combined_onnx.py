@@ -235,6 +235,7 @@ def main(run_dir_a, indices_a, run_dir_b, indices_b, rafal_onnx_path, out_onnx, 
     # gets it twice (inherited + ours) and consumers disagree depending on first-
     # vs last-match.
     from update_metadata import REFERENCE_KEYS_TO_DROP, MODEL_OWNED_KEYS
+    from olll_metadata import MODEL_AUTHOR
 
     for k, v in rafal_metadata.items():
         clean_key = k[len("rafal::"):] if k.startswith("rafal::") else k
@@ -342,7 +343,7 @@ def main(run_dir_a, indices_a, run_dir_b, indices_b, rafal_onnx_path, out_onnx, 
     act = str(net.get("activation", "gelu"))
     arch = str(net._target_).rsplit(".", 1)[-1]
     ident = {
-        "model_author": "Joaquin Iturriaga",
+        "model_author": MODEL_AUTHOR,
         "model_name": f"{arch}_c{net.get('hidden_channels')}"
                       f"_l{net.get('hidden_layers')}_{act}_combined",
         "model_parameters": json.dumps({

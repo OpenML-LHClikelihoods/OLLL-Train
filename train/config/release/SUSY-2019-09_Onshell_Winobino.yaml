@@ -1,7 +1,7 @@
 exp_name: release_v2
 exp_type: nLLs
 run_name: SUSY-2019-09_Onshell_Winobino
-base_dir: /eos/user/j/joiturri/likelihoods
+base_dir: ${oc.env:PROJECT_DIR,.}
 jobid: null
 seed: null
 debug: false
@@ -99,7 +99,7 @@ model:
 data:
   dataset:
   - 2106.01676-onshell-winobino-fluct25_-300k
-  data_path: /eos/user/j/joiturri/likelihoods/data
+  data_path: ${oc.env:PROJECT_DIR,.}/data
   subsample: null
   include_permsym: true
   train_test_val:
