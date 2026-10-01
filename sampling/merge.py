@@ -13,9 +13,14 @@
 # scan (see utils.create_metadata) and only gains x_min/x_max/y_min/y_max and
 # nLL_*_max after a successful run (see utils.update_metadata) - so those
 # fields are simply absent for an unfinished job. This script recomputes the
-# yield/likelihood extrema directly from the merged data instead of trusting
-# each chunk to have already computed them, which is what makes it work
-# regardless of whether the inputs are finished or not.
+# yield/likelihood extrema (x_min/x_max/y_min/y_max) directly from the merged
+# data instead of trusting each chunk to have already computed them, so they
+# always match whatever actually ended up in the merged table. Every other
+# config field is backfilled across chunks - a value missing or None in one
+# chunk's metadata.json is taken from another chunk that has it - and
+# nLL_*_max, which normally can't be recovered from the per-point data, falls
+# back to an upper bound read off the merged table if no chunk recorded a
+# real fit.
 #
 import argparse
 import glob
@@ -250,16 +255,20 @@ def merge_json_metadata(csv_files, computed_extrema, output_json):
     metadata files shared by several CSVs in the same directory (multiple
     ``scans`` chunks share one ``metadata.json``), and combines them:
 
-    * run configuration is taken from the first metadata file found, with a
-      warning for any key that disagrees between files (``seed`` excepted,
-      since every chunk legitimately has its own);
+    * run configuration is merged field-by-field across all chunks: a key
+      missing or recorded as ``None`` in one chunk is backfilled from
+      another chunk that has it, with a warning only when two chunks both
+      have a real value and it disagrees (``seed`` excepted, since every
+      chunk legitimately has its own);
     * ``x_min``/``x_max``/``y_min``/``y_max`` come from ``computed_extrema``
       (derived from the actual merged data), not from the chunks;
     * ``nLL_*_max`` (from the one-time maximum-likelihood fit, which cannot
       be recovered from the per-point data) is taken as the best value
-      across whichever chunks actually have it; left ``None`` - never a
-      placeholder ``inf``, which is not valid JSON - if none do, which is
-      expected for an unfinished run.
+      across whichever chunks actually have it. If no chunk has it, it
+      falls back to an upper bound read off the merged table (the best
+      mu=0/mu=1 value found for that quantity); only left ``None`` - never
+      a placeholder ``inf``, which is not valid JSON - if the table itself
+      lacks those columns.
 
     Args:
         csv_files (list[str]): Result CSVs that were actually merged.
@@ -293,7 +302,7 @@ def merge_json_metadata(csv_files, computed_extrema, output_json):
 
     nll_max = {key: None for key in
                ("nLL_exp_max", "nLL_obs_max", "nLLA_exp_max", "nLLA_obs_max")}
-    reference_metadata = None
+    loaded_metadata = []
     any_unfinished = False
 
     for meta_path in metadata_paths:
@@ -303,6 +312,7 @@ def merge_json_metadata(csv_files, computed_extrema, output_json):
         except Exception as e:  # noqa: BLE001
             print(f"[WARNING] Skipping unreadable metadata file {meta_path}: {e!r}")
             continue
+        loaded_metadata.append((meta_path, metadata))
 
         if not any(key in metadata for key in ("x_min", "nLL_exp_max")):
             # written by create_metadata but never updated: the run this
@@ -315,17 +325,52 @@ def merge_json_metadata(csv_files, computed_extrema, output_json):
                 if nll_max[key] is None or entry[1] < nll_max[key][1]:
                     nll_max[key] = entry
 
-        if reference_metadata is None:
-            reference_metadata = metadata.copy()
-        else:
-            for key, value in metadata.items():
-                if key in _COMPUTED_KEYS or key in ("seed", "merged"):
-                    continue
-                if reference_metadata.get(key) != value:
-                    print(f"[WARNING] Inconsistent value for {key!r} across chunks: "
-                          f"{reference_metadata.get(key)!r} vs {value!r} ({meta_path})")
+    if not loaded_metadata:
+        print("[WARNING] No metadata file could be read - writing the merged CSV without metadata.")
+        return None
 
-    merged_metadata = dict(reference_metadata or {})
+    # Generic config fields: a value missing or recorded as None in one
+    # chunk's metadata.json (e.g. a killed run can be missing keys that are
+    # only filled in by a later step) is backfilled from whichever other
+    # chunk has it, instead of only ever looking at the first file found.
+    # Two chunks that both have a real, differing value are a genuine
+    # inconsistency and are reported, not silently picked between.
+    merged_metadata = {}
+    for meta_path, metadata in loaded_metadata:
+        for key, value in metadata.items():
+            if key in _COMPUTED_KEYS or key in ("seed", "merged"):
+                continue
+            if key not in merged_metadata or merged_metadata[key] is None:
+                merged_metadata[key] = value
+            elif value is not None and merged_metadata[key] != value:
+                print(f"[WARNING] Inconsistent value for {key!r} across chunks: "
+                      f"{merged_metadata[key]!r} vs {value!r} ({meta_path})")
+
+    # nLL_*_max (the one-time maximum-likelihood fit) cannot be recovered
+    # from the per-point data in general - but if no chunk has it, the best
+    # (lowest) nLL actually observed among that quantity's mu=0/mu=1
+    # evaluations in the merged table is a valid upper bound on it (the free
+    # fit is at least as good as either fixed-mu point), and a better-than-
+    # nothing stand-in. mu_hat is left None since it isn't known this way.
+    y_min = computed_extrema.get("y_min") or []
+    if len(y_min) == N_LIKELIHOOD_COLUMNS:
+        # column order is [nLL_exp_mu0, nLL_exp_mu1, nLL_obs_mu0, nLL_obs_mu1,
+        # nLLA_exp_mu0, nLLA_exp_mu1, nLLA_obs_mu0, nLLA_obs_mu1] (see
+        # likelihood.py's likelihoods_to_save) - each nLL_*_max pairs with
+        # its own mu0/mu1 columns two apart.
+        fallback_columns = {
+            "nLL_exp_max": (0, 1), "nLL_obs_max": (2, 3),
+            "nLLA_exp_max": (4, 5), "nLLA_obs_max": (6, 7),
+        }
+        for key, (i_mu0, i_mu1) in fallback_columns.items():
+            if nll_max[key] is None:
+                best = min(y_min[i_mu0], y_min[i_mu1])
+                nll_max[key] = [None, best]
+                print(f"[WARNING] {key} missing from all metadata; approximated as the best "
+                      f"value found in the merged table ({best:.6g}). This is an upper bound "
+                      "on the true maximum-likelihood fit, not the fit itself - re-run "
+                      "calculate_Lmax for an exact value.")
+
     merged_metadata.update(computed_extrema)
     merged_metadata.update(nll_max)
     merged_metadata["merged"] = True
