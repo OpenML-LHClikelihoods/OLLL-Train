@@ -1,0 +1,9 @@
+# === Python / tooling caches ===
+__pycache__/
+*/__pycache__/*
+*.pyc
+
+# === macOS / editor / filesystem artifacts ===
+._*
+.DS_Store
+*/.DS_Store
