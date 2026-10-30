@@ -1,0 +1,164 @@
+{
+  "olll_schema_version": "0.1",
+  "model_type": "Regressor",
+  "model_name": "EXAMPLE-LEARNED-LIKELIHOOD",
+  "model_author": "First Author, Second Author",
+  "model_license": "CC BY 4.0",
+  "model_parameters": {
+    "architecture": "MuMLP",
+    "hidden_layers": [
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "activation": "GELU",
+    "out_shape": 4,
+    "loss": "HETEROSC"
+  },
+  "training_date": "2026-01-01",
+  "training_duration": "01:42:15",
+  "run_config": {
+    "seed": 42,
+    "batch_size": 1024,
+    "learning_rate": 0.001
+  },
+  "source": {
+    "analysis_id": "ATLAS-EXAMPLE-ANALYSIS",
+    "arxiv": "0000.00000",
+    "experiment": "ATLAS",
+    "sqrt_s": 13.0,
+    "statistical_model": {
+      "type": "histfactory",
+      "reference": "https://example.org/statistical-model",
+      "filename": "BkgOnly.json"
+    }
+  },
+  "input_type": "total_yields",
+  "channels": {
+    "EXAMPLE_SR": "SR",
+    "EXAMPLE_CR": "CR",
+    "EXAMPLE_VR": "VR"
+  },
+  "obs_yields": [
+    [
+      "EXAMPLE_SR-0",
+      6
+    ],
+    [
+      "EXAMPLE_CR-0",
+      120
+    ],
+    [
+      "EXAMPLE_VR-0",
+      48
+    ]
+  ],
+  "bkg_yields": [
+    [
+      "EXAMPLE_SR-0",
+      4.2
+    ],
+    [
+      "EXAMPLE_CR-0",
+      115.0
+    ],
+    [
+      "EXAMPLE_VR-0",
+      47.0
+    ]
+  ],
+  "bkg_unc": [
+    [
+      "EXAMPLE_SR-0",
+      1.1
+    ],
+    [
+      "EXAMPLE_CR-0",
+      9.5
+    ],
+    [
+      "EXAMPLE_VR-0",
+      5.0
+    ]
+  ],
+  "removeCRsVRs": false,
+  "remove_channels": [],
+  "x_min": [
+    0.0
+  ],
+  "x_max": [
+    100.0
+  ],
+  "y_min": [
+    -10.0,
+    -10.0,
+    -10.0,
+    -10.0
+  ],
+  "y_max": [
+    10.0,
+    10.0,
+    10.0,
+    10.0
+  ],
+  "preprocessing": {
+    "features_pipeline": [
+      "log_w_negatives",
+      "standardization"
+    ],
+    "nLLs_pipeline": [
+      "log_w_negatives",
+      "standardization"
+    ]
+  },
+  "standardization": {
+    "features_mean": [
+      [
+        0.0
+      ]
+    ],
+    "features_std": [
+      [
+        1.0
+      ]
+    ],
+    "nLLs_mean": [
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "nLLs_std": [
+      [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    ]
+  },
+  "nLL_exp_mu0": 0.0,
+  "nLL_obs_mu0": 0.0,
+  "nLLA_exp_mu0": 0.0,
+  "nLLA_obs_mu0": 0.0,
+  "nLL_exp_max": [
+    1.0,
+    0.0
+  ],
+  "nLL_obs_max": [
+    1.0,
+    0.0
+  ],
+  "nLLA_exp_max": [
+    1.0,
+    0.0
+  ],
+  "nLLA_obs_max": [
+    1.0,
+    0.0
+  ]
+}
