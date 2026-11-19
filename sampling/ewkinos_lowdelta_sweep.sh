@@ -2,7 +2,7 @@
 #SBATCH --job-name=olll-ewkinos-lowdelta-sweep
 #SBATCH --output=/ceph/hpc/home/maselekr/slurm_logs/olll-ewkinos-lowdelta-sweep-%A-%a.out
 #SBATCH --error=/ceph/hpc/home/maselekr/slurm_logs/olll-ewkinos-lowdelta-sweep-%A-%a.err
-#SBATCH --time=00:30:00
+#SBATCH --time=01:30:00
 #SBATCH --partition=cpu
 #SBATCH --mem-per-cpu=2000M
 #SBATCH --cpus-per-task=8
@@ -22,14 +22,19 @@
 # narrow Gaussian centred at zero signal, and points=2 so a chain is flushed
 # before it random-walks away from that start.
 #
-# Each short chain still pays the one-off calculate_Lmax cost (~1 minute,
-# dominated by 4 profile-likelihood maximisations) on its first step, same
-# as any other chain, so running only one chain per SLURM task would waste
-# most of the walltime on job overhead rather than sampling. Instead
-# parameters_ewkinos_lowdelta.yaml sets scans=40: each array task runs 40
-# independent near-zero chains, spread over --cpus-per-task=8 workers (5
-# chains/core, each ~1 minute -> ~5-10 minutes/task). Tune `scans` /
-# `processes` / --cpus-per-task together if you change either.
+# Each short chain still pays the one-off calculate_Lmax cost on its first
+# step, same as any other chain, so running only one chain per SLURM task
+# would waste most of the walltime on job overhead rather than sampling.
+# Instead parameters_ewkinos_lowdelta.yaml sets scans=40: each array task
+# runs 40 independent near-zero chains, spread over --cpus-per-task=8
+# workers (5 chains/core). Measured on the cluster (2026-11-19, job
+# 50529897): ~6.5 min/chain including the per-worker TensorFlow/CUDA
+# reinit overhead from maxtasksperchild=1 respawning every chain - so
+# 5 chains/core takes ~33-40 min, not the "~5-10 min" originally guessed
+# here, which is why the first run at --time=00:30:00 got cut off at
+# ~32/40 chains per task (CANCELLED ... DUE TO TIME LIMIT, every task
+# left with table-*.csv but no results-*.csv). Tune `scans` / `processes`
+# / --cpus-per-task / --time together if you change either.
 #
 # With `cluster : True` set in parameters_ewkinos_lowdelta.yaml, sample.py
 # still adds the task ID to the random seed and writes to
@@ -105,13 +110,19 @@ START_MARKER=$(mktemp)
 python sample.py "${PARAM_FILE}" --log_dir "${LOG_DIR}"
 
 # ── Verify output ─────────────────────────────────────────────────────────────
-NEW_CSVS=$(find "${OUTPUT_DIR}" -path "*-${TASK_ID}/*.csv" -newer "${START_MARKER}")
+# Only results-*.csv proves sample.py reached its final merge step; a killed
+# or still-running task leaves table-*.csv (+ metadata.json) behind too, so
+# matching any *.csv here would report success for an incomplete run (this
+# is exactly what happened at --time=00:30:00: tasks cut off mid-chain still
+# "passed" this check because their partial table-*.csv files matched).
+RESULT_CSVS=$(find "${OUTPUT_DIR}" -path "*-${TASK_ID}/results-*.csv" -newer "${START_MARKER}")
 rm -f "${START_MARKER}"
-if [ -n "${NEW_CSVS}" ]; then
+if [ -n "${RESULT_CSVS}" ]; then
     echo "✓ Task ${TASK_ID} finished at $(date), wrote:"
-    echo "${NEW_CSVS}"
+    echo "${RESULT_CSVS}"
     exit 0
 else
-    echo "✗ Error: task ${TASK_ID} produced no CSV in ${OUTPUT_DIR}/*-${TASK_ID}/ (see ${LOG_DIR})"
+    echo "✗ Error: task ${TASK_ID} produced no results-*.csv in ${OUTPUT_DIR}/*-${TASK_ID}/ " \
+         "(incomplete run - check for table-*.csv there and see ${LOG_DIR})"
     exit 1
 fi
