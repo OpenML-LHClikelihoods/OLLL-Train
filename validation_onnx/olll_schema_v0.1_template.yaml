@@ -1,0 +1,177 @@
+# OLLL metadata template — schema v0.1
+# =====================================
+# This is a COMMENTED AUTHORING TEMPLATE, not an ONNX metadata_props dump.
+# ONNX metadata_props is a flat map of STRING keys to STRING values.
+# When writing this template into an ONNX model:
+#   - every top-level metadata value must be a string;
+#   - serialize structured mappings and sequences as JSON strings, preserving
+#     numbers and booleans within them (e.g. 13.0, 6, true, false);
+#   - EXCEPTION: run_config may be stored as either a JSON or a YAML string,
+#     preserving the existing producer's representation;
+#   - convert top-level numeric and boolean scalars to strings (e.g. "0.25",
+#     "true", "false");
+#   - write each top-level key exactly once.
+# REQUIRED v0.1 ONNX OUTPUT CONVENTION (one output tensor, shape [batch, 8]):
+#   0: delta_nLL_exp   1: delta_nLL_obs   2: delta_nLLA_exp   3: delta_nLLA_obs
+#   4: sigma_exp       5: sigma_obs       6: sigma_expA       7: sigma_obsA
+# The first four are NN-predicted, PREPROCESSED nLL differences relative
+# to the corresponding *_mu0 reference metadata. Inverse-transform them
+# using the saved nLL preprocessing/standardization, then add *_mu0 to
+# obtain nLL(mu=1). The last four are non-log uncertainty estimates on
+# those preprocessed differences, in the same order. Propagate them through
+# the inverse transformation (absolute derivative) to obtain nLL errors.
+# y_min/y_max and nLL standardization each describe FOUR likelihood targets,
+# NOT all eight raw outputs. The graph MUST have exactly eight output values,
+# even if model_parameters.loss has another name; a four-output graph is invalid.
+# Static validation can enforce dimensions and metadata consistency, but cannot
+# prove output ordering or uncertainty parameterization from graph shape alone.
+# All example names and numbers below are illustrative. Replace them with
+# values from the actual statistical model and trained surrogate.
+# R = required; O = optional.
+
+# ── 1. Schema identification ──────────────────────────────────────────────
+olll_schema_version: "0.1"                # R; write this metadata entry first
+
+# ── 2. Model information (retain existing flat fields) ───────────────────
+model_type: "Regressor"                   # R; preserve the model's existing value
+model_name: "EXAMPLE-LEARNED-LIKELIHOOD"  # R
+model_author: "First Author, Second Author" # R; comma-separated string
+model_license: "CC BY 4.0"               # R; replace with actual license
+model_parameters:                         # O; retain the producer's EXISTING JSON shape
+  # Example only: replace this entire object with the existing structure.
+  architecture: "MuMLP"
+  hidden_layers: [64, 64, 64, 64, 64]
+  activation: "GELU"
+  out_shape: 4                         # R for this example; four likelihood targets
+  loss: "HETEROSC"                     # Example; eight-output convention is mandatory regardless of loss
+training_date: "2026-01-01"              # O; YYYY-MM-DD preferred
+training_duration: "01:42:15"           # O; example duration string; keep producer format
+run_config:                              # O; JSON or YAML accepted; illustrative configuration
+  seed: 42
+  batch_size: 1024
+  learning_rate: 0.001
+# model_version: "..."                   # O
+# contact: {name: "...", email: "..."}   # O; new JSON-valued metadata
+# persistent_id: {type: "doi", value: "10...."} # O; new JSON-valued metadata
+
+# ── 3. Source documentation (NEW) ────────────────────────────────────────
+source:                                   # R; serialize whole object as JSON
+  analysis_id: "ATLAS-EXAMPLE-ANALYSIS"   # R; established analysis identifier
+  arxiv: "0000.00000"                    # R; replace with actual arXiv ID
+  experiment: "ATLAS"                    # R
+  sqrt_s: 13.0                            # R; TeV (fixed schema unit)
+  statistical_model:                     # R
+    type: "histfactory"                  # R; histfactory | hs3 | combine
+    reference: "https://example.org/statistical-model" # R; real DOI/URL
+    filename: "BkgOnly.json"             # R; original model filename
+  # inspire_id: "..."                    # O
+  # luminosity: 139.0                    # O; fb^-1 (fixed schema unit)
+# Legacy analysis, analysis_altname and bkgfiles may be kept as extra keys,
+# but are not required in v0.1. If present, they should agree with source.
+
+# ── 4. Input type, channels, and experimental yields ──────────────────────
+input_type: "total_yields"                # R; only permitted v0.1 value
+
+# R; preserve the existing mapping channel_name -> SR / CR / VR.
+# This mapping documents the original statistical-model channels and may
+# include channels removed from the actual ONNX model.
+channels:
+  EXAMPLE_SR: "SR"
+  EXAMPLE_CR: "CR"
+  EXAMPLE_VR: "VR"
+
+# R; retain the existing ordered list of [bin_name, value] pairs.
+# The three lists MUST contain the same bin names in the same order.
+# Values here are illustrative and NOT actual experimental data.
+obs_yields:
+  - ["EXAMPLE_SR-0", 6]
+  - ["EXAMPLE_CR-0", 120]
+  - ["EXAMPLE_VR-0", 48]
+bkg_yields:
+  - ["EXAMPLE_SR-0", 4.2]
+  - ["EXAMPLE_CR-0", 115.0]
+  - ["EXAMPLE_VR-0", 47.0]
+bkg_unc:
+  - ["EXAMPLE_SR-0", 1.1]
+  - ["EXAMPLE_CR-0", 9.5]
+  - ["EXAMPLE_VR-0", 5.0]
+# No signal_unc field in v0.1; deferred to v1.0.
+# Example bkg_unc above uses one scalar per bin (e.g. 1.1 for EXAMPLE_SR-0).
+# Retain the producer's existing uncertainty convention; v0.1 does not
+# introduce a new absolute/relative or symmetric/asymmetric convention.
+
+# ── 5. Region removal ─────────────────────────────────────────────────────
+removeCRsVRs: false                     # R; JSON boolean
+remove_channels: []                      # R; JSON array of channel names
+# Validation WARNINGS (not errors):
+#   removeCRsVRs == true  and remove_channels == []
+#   removeCRsVRs == false and remove_channels != []
+# Explicitly removed channels must be identifiable in 'channels'.
+# The channel/yield metadata may still document excluded regions; do not
+# assume all documented bins are active ONNX inputs.
+
+# ── 6. Input and output bounds ────────────────────────────────────────────
+# R; retain the existing numeric-array representation and active feature
+# order. Replace example lengths/values with the real ONNX dimensions.
+x_min: [0.0]
+x_max: [100.0]
+y_min: [-10.0, -10.0, -10.0, -10.0]
+y_max: [10.0, 10.0, 10.0, 10.0]
+
+# ── 7. Preprocessing and standardization ──────────────────────────────────
+# R; preserve the producer's EXISTING JSON representation. These examples
+# show a common structure; do not rewrite a legacy per-output pipeline into
+# this example if its actual representation differs.
+preprocessing:
+  features_pipeline:
+    - "log_w_negatives"
+    - "standardization"
+  nLLs_pipeline:
+    - "log_w_negatives"
+    - "standardization"
+  # note: "log_w_negatives = sign(x) * log(1 + abs(x))"
+standardization:
+  features_mean: [[0.0]]                # R when feature standardization used
+  features_std: [[1.0]]                 # R when feature standardization used
+  nLLs_mean: [[0.0, 0.0, 0.0, 0.0]]     # R when output standardization used
+  nLLs_std: [[1.0, 1.0, 1.0, 1.0]]      # R when output standardization used
+# Numerical arrays must match the corresponding actual graph dimensions;
+# standard deviations must be finite and strictly positive.
+
+# ── 8. Four-target likelihood reference metadata ────────────────
+# R: all eight likelihood reference fields are mandatory in OLLL v0.1.
+# Values below are placeholders only; use the actual trained-model values.
+# The four *_mu0 fields are finite scalar nLL reference values at mu=0.
+# The four *_max fields are exactly two finite numbers:
+#   [mu_at_maximum_likelihood, negative_log_maximum_likelihood].
+# The validator reports an error if a field is missing or has the wrong shape/type.
+nLL_exp_mu0: 0.0        # R
+nLL_obs_mu0: 0.0        # R
+nLLA_exp_mu0: 0.0       # R
+nLLA_obs_mu0: 0.0       # R
+nLL_exp_max: [1.0, 0.0]        # R
+nLL_obs_max: [1.0, 0.0]        # R
+nLLA_exp_max: [1.0, 0.0]       # R
+nLLA_obs_max: [1.0, 0.0]       # R
+
+# ── 9. Additional existing metadata ──────────────────────────────────────
+# O; illustrative extra flat metadata entries (uncomment only those present
+# in the actual model, and retain its existing value types and shapes):
+# signal_leakage_CR: false
+# signal_leakage_CR_spread: 0.0
+# signal_leakage_CR_sign: 1
+# signal_leakage_VR: false
+# signal_leakage_VR_spread: 0.0
+# signal_leakage_VR_sign: 1
+# SR_sigma: 1.0
+# CR_sigma: 1.0
+# VR_sigma: 1.0
+# fit_bkg: true
+# patchsets: ["example_patchset.json"]
+# merged: false
+# scan_criterion: "example_criterion"
+# scans: 10
+# points: 10000
+# seed: 42
+# start_method: "spawn"
+# Do not add duplicate keys; conflicting duplicate keys are validation errors.

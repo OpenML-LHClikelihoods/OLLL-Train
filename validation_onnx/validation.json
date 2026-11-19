@@ -1,0 +1,51 @@
+[
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2018-04_V1_20260910.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  },
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2018-16_EWKinos_V2_20261015.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  },
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2018-16_Sleptons_V2_20261015.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  },
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2018-32_V1_20260910.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  },
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2019-08_V1_20260911.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  },
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2019-09_Offshell_V1_20261009_WWdata_WinoBinoPlus.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  },
+  {
+    "file": "/Users/humbertosmac/Documents/work/ML-likelihoods/OLLL/ONNX/ForPaper/ATLAS-SUSY-2019-09_Onshell_V1_20260911.onnx",
+    "status": "VALID",
+    "errors": 0,
+    "warnings": 0,
+    "issues": []
+  }
+]
