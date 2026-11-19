@@ -2,11 +2,11 @@
 #SBATCH --job-name=olll-ewkinos-lowdelta-sweep
 #SBATCH --output=/ceph/hpc/home/maselekr/slurm_logs/olll-ewkinos-lowdelta-sweep-%A-%a.out
 #SBATCH --error=/ceph/hpc/home/maselekr/slurm_logs/olll-ewkinos-lowdelta-sweep-%A-%a.err
-#SBATCH --time=01:30:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=cpu
 #SBATCH --mem-per-cpu=2000M
 #SBATCH --cpus-per-task=8
-#SBATCH --array=0-249
+#SBATCH --array=0-149
 
 # Targeted EWKinos sweep near delta = nLL(mu=1) - nLL(mu=0) = 0 (no signal
 # uncertainty, cards/1911.12606-nounc-EWKinos.yaml). The usual boundary-scan
@@ -19,31 +19,37 @@
 # sleptons_sampling_from_csv.sh), this one does not read starting points
 # from a CSV: parameters_ewkinos_lowdelta.yaml sets start_method='fine-tune'
 # (utils.generate_starting_points), which draws each chain's start from a
-# narrow Gaussian centred at zero signal, and points=2 so a chain is flushed
-# before it random-walks away from that start.
+# narrow Gaussian centred at zero signal.
 #
-# Each short chain still pays the one-off calculate_Lmax cost on its first
-# step, same as any other chain, so running only one chain per SLURM task
-# would waste most of the walltime on job overhead rather than sampling.
-# Instead parameters_ewkinos_lowdelta.yaml sets scans=40: each array task
-# runs 40 independent near-zero chains, spread over --cpus-per-task=8
-# workers (5 chains/core). Measured on the cluster (2026-11-19, job
-# 50529897): ~6.5 min/chain including the per-worker TensorFlow/CUDA
-# reinit overhead from maxtasksperchild=1 respawning every chain - so
-# 5 chains/core takes ~33-40 min, not the "~5-10 min" originally guessed
-# here, which is why the first run at --time=00:30:00 got cut off at
-# ~32/40 chains per task (CANCELLED ... DUE TO TIME LIMIT, every task
-# left with table-*.csv but no results-*.csv). Tune `scans` / `processes`
-# / --cpus-per-task / --time together if you change either.
+# First version of this script used points=2 (one MCMC step per chain, 40
+# chains/task): that only ever lands in delta in [0, 0.25) and stops, not
+# the [0.25, 4) band the exclusion threshold actually sits in, since a
+# single random-walk step from the S=0 start can't get further. A local
+# step-by-step trace (2026-11-19) showed delta growing ~linearly with step
+# count (it's a quadratic observable of the walk's displacement, so grows
+# with variance, i.e. with N, not sqrt(N)) through the whole [0.25, 4) gap
+# by step ~50, without yet reaching the already-dense [4, 20) bulk -
+# parameters_ewkinos_lowdelta.yaml now sets points=50 so every step along
+# that walk is kept as its own training row, spread across the band that
+# actually needed filling, not just whichever point the chain stopped at.
+#
+# A points=50 chain is no longer "short": measured ~48 min/chain locally
+# (vs. ~6.5 min/chain for the old points=2 version, almost all of which was
+# the one-off calculate_Lmax cost paid on a chain's first step regardless
+# of its length). So parameters_ewkinos_lowdelta.yaml now sets scans=8,
+# matching --cpus-per-task=8 - one chain per worker, not several run back-
+# to-back - and --time is bumped to 04:00:00 for margin, since the cluster's
+# own per-chain cost hasn't been measured for this length yet (the earlier
+# --time=00:30:00 run undershot in exactly this way: it left every task
+# with table-*.csv but no results-*.csv, CANCELLED ... DUE TO TIME LIMIT).
 #
 # With `cluster : True` set in parameters_ewkinos_lowdelta.yaml, sample.py
 # still adds the task ID to the random seed and writes to
 # <output_folder>/<analysis>-<n>-<task ID>, so tasks never collide even
 # though every task uses the same fine-tune start method.
 #
-# --array=0-249 x scans=40 x points=2 -> ~20,000 rows total; a cheap first
-# pass. Bump --array (not scans) for more coverage - more, cheaper tasks
-# parallelise better on the cluster than fewer, longer ones.
+# --array=0-149 x scans=8 x points=50 -> ~60,000 rows total, concentrated
+# in [0, ~3) (old training set has only ~34,000 rows total in [0, 4)).
 
 set -eo pipefail   # no -u: conda's activate scripts reference unset variables
 

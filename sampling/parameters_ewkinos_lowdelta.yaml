@@ -9,21 +9,31 @@
 #
 # start_method='fine-tune' (utils.generate_starting_points) draws each
 # chain's starting point from a narrow Gaussian centred at zero signal
-# instead of the usual random/default placement, and points=2 keeps each
-# chain short so it is flushed before it has time to random-walk away from
-# that start. 'scans' is the number of independent such chains sample.py
-# runs per invocation (see sample.py's generate_starting_points(n=scans,...)
-# call) - a SLURM array task runs 'scans' of these short chains back to
-# back/in parallel (processes), not just one, since the fixed per-chain cost
-# (the one-off calculate_Lmax maximisation, ~minute) would otherwise be paid
-# mostly for SLURM job overhead rather than actual sampling.
+# instead of the usual random/default placement. 'scans' is the number of
+# independent such chains sample.py runs per invocation (see sample.py's
+# generate_starting_points(n=scans,...) call).
+#
+# points=2 (one MCMC transition per chain) was tried first and was wrong:
+# with the default SR_sigma/CR_sigma, a single step already lands the chain
+# somewhere in [0, 0.25) and stops there - only the band immediately next to
+# delta=0, not the [0.25, 4) band the exclusion threshold actually sits in.
+# A local trace of delta vs. step count (points=50, same SR_sigma=CR_sigma=
+# 0.01 as below, 2026-11-19) showed delta growing ~linearly with step count
+# (it's a quadratic observable of the random-walk displacement, so it grows
+# with the walk's variance, i.e. with N, not sqrt(N)) up through the whole
+# [0.25, 4) gap by step ~50, without yet drifting into the already-dense
+# [4, 20) bulk - so points=50 keeps every one of the walk's own steps as a
+# separate, useful training row spread across exactly the depleted band,
+# instead of just the last one. scans=8 (= cpus-per-task below) gives each
+# worker exactly one such chain instead of several run back-to-back, since
+# a points=50 chain is no longer "short" (measured ~48 min/chain locally).
 ---
 analyses : ['1911.12606']
 input_folder : '../data/'
 output_folder : '../tables/'
 processes : 8          # match --cpus-per-task in the sbatch script
-scans : 40              # short chains per array task (see note above)
-points : 2              # steps per chain - short, stays near the S=0 start
+scans : 8               # one chain per core (see note above)
+points : 50             # steps per chain - sweeps delta from ~0 to ~3
 bkg_unc_samples : 500
 low_lim_samples : 30
 buffer_size : 20
@@ -47,8 +57,8 @@ cluster : True
 ---
 analysis : '1911.12606'
 include : cards/1911.12606-nounc-EWKinos.yaml
-points : 2
-scans : 40
+points : 50
+scans : 8
 buffer_size : 20
 signal_leakage_CR_spread : 0.5
 signal_leakage_VR_spread : 0.5
