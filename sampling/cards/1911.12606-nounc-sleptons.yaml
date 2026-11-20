@@ -1,10 +1,11 @@
 #
-# ATLAS-SUSY-2018-16 / arXiv:1911.12606 - EWKinos patchset, no signal
-# uncertainty. Identical to 1911.12606.yaml except EWKinos is the active
-# patchset instead of Sleptons (matches the patchset/remove_channels
+# ATLAS-SUSY-2018-16 / arXiv:1911.12606 - Sleptons patchset, no signal
+# uncertainty. Identical to 1911.12606-nounc-EWKinos.yaml except Sleptons is
+# the active patchset instead of EWKinos (matches the patchset/remove_channels
 # combination already used to produce
-# tables/1911.12606-nounc-EWKinos/*-merged.{csv,json} - see that metadata's
-# own 'patchsets'/'remove_channels' fields).
+# results/1911.12606-nounc/Sleptons/training_data/raw/1911.12606-nounc-sleptons-merged.{csv,json}
+# - see that metadata's own 'patchsets'/'remove_channels' fields: SR_sigma=
+# CR_sigma=0.01, remove_channels=[], sig_rel_unc=0.0).
 #
 # bkg_yields / bkg_unc for the signal regions are the published CR+SR fit
 # results, arXiv:1911.12606v2 tables 11, 12 and 14, indexed per BIN in the
@@ -24,9 +25,9 @@ bkgfiles :
     - Sleptons_bkgonly.json
     - Smuons_bkgonly.json
 patchsets :
-    - [EWKinos_patchset.json, True]
+    - [EWKinos_patchset.json, False]
     - [Selectrons_patchset.json, False]
-    - [Sleptons_patchset.json, False]
+    - [Sleptons_patchset.json, True]
     - [Smuons_patchset.json, False]
 channels :
     - CRVV_MLL_hghmet_cuts : 'CR'

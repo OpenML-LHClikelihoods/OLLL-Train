@@ -1,64 +1,56 @@
 #!/bin/bash
-#SBATCH --job-name=olll-ewkinos-lowdelta-sweep
-#SBATCH --output=/ceph/hpc/home/maselekr/slurm_logs/olll-ewkinos-lowdelta-sweep-%A-%a.out
-#SBATCH --error=/ceph/hpc/home/maselekr/slurm_logs/olll-ewkinos-lowdelta-sweep-%A-%a.err
-#SBATCH --time=04:00:00
+#SBATCH --job-name=olll-sleptons-lowdelta-sweep
+#SBATCH --output=/ceph/hpc/home/maselekr/slurm_logs/olll-sleptons-lowdelta-sweep-%A-%a.out
+#SBATCH --error=/ceph/hpc/home/maselekr/slurm_logs/olll-sleptons-lowdelta-sweep-%A-%a.err
+#SBATCH --time=02:00:00
 #SBATCH --partition=cpu
 #SBATCH --mem-per-cpu=2000M
-#SBATCH --cpus-per-task=8
-#SBATCH --array=0-149
+#SBATCH --cpus-per-task=24
+#SBATCH --array=0-79
 
-# Targeted EWKinos sweep near delta = nLL(mu=1) - nLL(mu=0) = 0 (no signal
-# uncertainty, cards/1911.12606-nounc-EWKinos.yaml). The usual boundary-scan
-# MCMC (parameters.yaml) concentrates its samples in the high-dimensional
-# "typical set" of the 44-bin random walk (delta of order tens), not near
-# S=0 where delta is small - but that neighbourhood is exactly where the
-# expected exclusion threshold (delta of order 1-4) sits.
+# Targeted Sleptons sweep near delta = nLL(mu=1) - nLL(mu=0) = 0 (no signal
+# uncertainty, cards/1911.12606-nounc-sleptons.yaml) - same method as the
+# EWKinos version (ewkinos_lowdelta_sweep.sh), but Sleptons' own data is
+# shaped very differently: its typical-set mode sits at delta~6-7 (not
+# EWKinos' ~22-25), and [2,4) is already reasonably populated (~8.5% of the
+# dataset) - the genuinely thin band is [0,2) ([0,0.25): 0.12%, [0.25,1):
+# 0.86%, [1,2): 2.71%, 2026-11-20 analysis), so that is the target here,
+# not [0,4).
 #
-# Unlike the earlier per-row sweeps (ewkinos_deficit_sweep_from_csv.sh,
-# sleptons_sampling_from_csv.sh), this one does not read starting points
-# from a CSV: parameters_ewkinos_lowdelta.yaml sets start_method='fine-tune'
-# (utils.generate_starting_points), which draws each chain's start from a
-# narrow Gaussian centred at zero signal.
+# start_method='fine-tune' (utils.generate_starting_points, set in
+# parameters_sleptons_lowdelta.yaml) draws each chain's start from a narrow
+# Gaussian centred at zero signal. points=40 was picked from a local
+# calibration smoke test (2026-11-20, 4 chains, same SR_sigma=CR_sigma=0.01
+# as the original production Sleptons no-unc run used): mean delta_exp grows
+# from ~0.05 at step 0 to ~1.3-1.5 by step 35-39, landing inside the target
+# [0,2) band without drifting past it.
 #
-# First version of this script used points=2 (one MCMC step per chain, 40
-# chains/task): that only ever lands in delta in [0, 0.25) and stops, not
-# the [0.25, 4) band the exclusion threshold actually sits in, since a
-# single random-walk step from the S=0 start can't get further. A local
-# step-by-step trace (2026-11-19) showed delta growing ~linearly with step
-# count (it's a quadratic observable of the walk's displacement, so grows
-# with variance, i.e. with N, not sqrt(N)) through the whole [0.25, 4) gap
-# by step ~50, without yet reaching the already-dense [4, 20) bulk -
-# parameters_ewkinos_lowdelta.yaml now sets points=50 so every step along
-# that walk is kept as its own training row, spread across the band that
-# actually needed filling, not just whichever point the chain stopped at.
+# A points=40 chain is not "short" (same order of magnitude as the EWKinos
+# points=50 chain, measured ~48 min/chain locally there), so scans=24
+# matches --cpus-per-task=24 - one chain per worker, not several run back-
+# to-back. The cluster's own per-chain cost for this hasn't been measured
+# yet (the local smoke test ran under contention from a separate 24-core
+# validation job), so --time=02:00:00 is a provisional budget, same
+# reasoning as the EWKinos sweep's own first --time guess - watch the first
+# completed tasks' .err logs for CANCELLED ... DUE TO TIME LIMIT before
+# trusting it for the full array.
 #
-# A points=50 chain is no longer "short": measured ~48 min/chain locally
-# (vs. ~6.5 min/chain for the old points=2 version, almost all of which was
-# the one-off calculate_Lmax cost paid on a chain's first step regardless
-# of its length). So parameters_ewkinos_lowdelta.yaml now sets scans=8,
-# matching --cpus-per-task=8 - one chain per worker, not several run back-
-# to-back - and --time is bumped to 04:00:00 for margin, since the cluster's
-# own per-chain cost hasn't been measured for this length yet (the earlier
-# --time=00:30:00 run undershot in exactly this way: it left every task
-# with table-*.csv but no results-*.csv, CANCELLED ... DUE TO TIME LIMIT).
-#
-# With `cluster : True` set in parameters_ewkinos_lowdelta.yaml, sample.py
+# With `cluster : True` set in parameters_sleptons_lowdelta.yaml, sample.py
 # still adds the task ID to the random seed and writes to
 # <output_folder>/<analysis>-<n>-<task ID>, so tasks never collide even
 # though every task uses the same fine-tune start method.
 #
-# --array=0-149 x scans=8 x points=50 -> ~60,000 rows total, concentrated
-# in [0, ~3) (old training set has only ~34,000 rows total in [0, 4)).
+# --array=0-79 x scans=24 x points=40 -> ~76,800 rows total, concentrated
+# in [0, ~1.5) (same order of magnitude as the EWKinos fix's ~74,700 rows).
 
 set -eo pipefail   # no -u: conda's activate scripts reference unset variables
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PROJECT_DIR="/ceph/hpc/home/maselekr/projects/OLLL-Train"
 SAMPLING_DIR="${PROJECT_DIR}/sampling"
-PARAM_FILE="${SAMPLING_DIR}/parameters_ewkinos_lowdelta.yaml"
+PARAM_FILE="${SAMPLING_DIR}/parameters_sleptons_lowdelta.yaml"
 DATA_DIR="${PROJECT_DIR}/data"
-OUTPUT_DIR="${PROJECT_DIR}/tables"   # must match output_folder in parameters_ewkinos_lowdelta.yaml
+OUTPUT_DIR="${PROJECT_DIR}/tables"   # must match output_folder in parameters_sleptons_lowdelta.yaml
 CONDA_ENV="likelihood"               # env built from sampling/requirements.txt
 
 TASK_ID=${SLURM_ARRAY_TASK_ID:-0}
@@ -110,7 +102,7 @@ mkdir -p /ceph/hpc/home/maselekr/slurm_logs "${OUTPUT_DIR}" "${LOG_DIR}"
 ) 9>"${DATA_DIR}/.unpack.lock"
 
 # ── Run the sampler ────────────────────────────────────────────────────────────
-# parameters_ewkinos_lowdelta.yaml uses paths relative to sampling/ (../data/, ../tables/)
+# parameters_sleptons_lowdelta.yaml uses paths relative to sampling/ (../data/, ../tables/)
 cd "${SAMPLING_DIR}"
 START_MARKER=$(mktemp)
 python sample.py "${PARAM_FILE}" --log_dir "${LOG_DIR}"
@@ -118,9 +110,7 @@ python sample.py "${PARAM_FILE}" --log_dir "${LOG_DIR}"
 # ── Verify output ─────────────────────────────────────────────────────────────
 # Only results-*.csv proves sample.py reached its final merge step; a killed
 # or still-running task leaves table-*.csv (+ metadata.json) behind too, so
-# matching any *.csv here would report success for an incomplete run (this
-# is exactly what happened at --time=00:30:00: tasks cut off mid-chain still
-# "passed" this check because their partial table-*.csv files matched).
+# matching any *.csv here would report success for an incomplete run.
 RESULT_CSVS=$(find "${OUTPUT_DIR}" -path "*-${TASK_ID}/results-*.csv" -newer "${START_MARKER}")
 rm -f "${START_MARKER}"
 if [ -n "${RESULT_CSVS}" ]; then
